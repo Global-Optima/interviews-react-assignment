@@ -14,16 +14,29 @@ function App() {
   }
 
   return (
-    <Box height="100vh" display="flex" flexDirection="column">
+    <Box 
+      height="100vh" 
+      display="flex" 
+      flexDirection="column"
+      sx={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      }}
+    >
       <CssBaseline/>
       <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-      <Box flex={1} display="flex" flexDirection="row">
+      <Box 
+        flex={1} 
+        display="flex" 
+        flexDirection="row"
+        sx={{
+          overflow: 'hidden',
+        }}
+      >
         <Categories/>
         <Box flex={1}>
           <Products onCartChange={onCartChange}/>
         </Box>
       </Box>
-
     </Box>
   );
 }
