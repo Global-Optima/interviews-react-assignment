@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -10,10 +10,13 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  Divider,
 } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
+import { useProductFilters } from './hooks/useProductFilters.ts';
+import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
 
 export type Product = {
   id: number;
@@ -34,74 +37,161 @@ export type Cart = {
 const PRODUCTS_PER_PAGE = 20;
 
 export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void }) => {
+  const { filters } = useProductFilters();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollBoxRef = useRef<HTMLDivElement>(null);
-  const loadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Загрузка товаров
-  const loadProducts = useCallback(async (pageNum: number) => {
-    if (loadingRef.current) return;
-    
-    loadingRef.current = true;
+  // Функция loadMore для загрузки следующей страницы
+  const loadMore = useCallback(async () => {
+    // Не загружаем если уже идет загрузка или нет больше товаров
+    if (isLoading || !hasMore) {
+      console.log('[loadMore] Skipped:', { isLoading, hasMore });
+      return;
+    }
+
+    console.log('[loadMore] Loading page:', page + 1);
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/products?page=${pageNum}&limit=${PRODUCTS_PER_PAGE}`);
+      // Построение URL с параметрами фильтров
+      const params = new URLSearchParams();
+      params.set('page', (page + 1).toString());
+      params.set('limit', PRODUCTS_PER_PAGE.toString());
+      
+      if (filters.q) {
+        params.set('q', filters.q);
+      }
+      if (filters.category) {
+        params.set('category', filters.category);
+      }
+
+      const response = await fetch(`/products?${params.toString()}`);
+      
       if (!response.ok) {
-        throw new Error('Не удалось загрузить товары');
+        throw new Error(`Не удалось загрузить товары: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Сервер вернул неправильный тип данных');
       }
       
       const data = await response.json();
-      
-      setProducts(prev => {
-        // Добавляем новые товары к существующим
-        const newProducts = pageNum === 0 ? data.products : [...prev, ...data.products];
-        return newProducts;
+      console.log('[loadMore] Loaded:', { 
+        productsCount: data.products?.length, 
+        total: data.total, 
+        hasMore: data.hasMore 
       });
       
+      // Добавляем новые товары к существующим
+      setProducts(prev => [...prev, ...data.products]);
+      setTotalCount(data.total);
+      
+      // Увеличиваем номер страницы
+      setPage(prev => prev + 1);
+      
+      // Обновляем hasMore на основе ответа API
       setHasMore(data.hasMore);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
     } finally {
       setIsLoading(false);
-      loadingRef.current = false;
     }
-  }, []);
+  }, [isLoading, hasMore, page, filters.q, filters.category]);
 
-  // Начальная загрузка
-  useEffect(() => {
-    loadProducts(0);
-  }, [loadProducts]);
+  // Начальная загрузка товаров
+  const loadInitial = useCallback(async () => {
+    console.log('[loadInitial] Starting initial load');
+    setIsLoading(true);
+    setError(null);
 
-  // Обработчик прокрутки для бесконечной загрузки
-  const handleScroll = useCallback(() => {
-    const scrollBox = scrollBoxRef.current;
-    if (!scrollBox || !hasMore || isLoading) return;
+    try {
+      const params = new URLSearchParams();
+      params.set('page', '0');
+      params.set('limit', PRODUCTS_PER_PAGE.toString());
+      
+      if (filters.q) {
+        params.set('q', filters.q);
+      }
+      if (filters.category) {
+        params.set('category', filters.category);
+      }
 
-    const { scrollTop, scrollHeight, clientHeight } = scrollBox;
-    const scrollThreshold = 200; // Загружать за 200px до конца
-
-    if (scrollHeight - scrollTop - clientHeight < scrollThreshold) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      loadProducts(nextPage);
+      const response = await fetch(`/products?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`Не удалось загрузить товары: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Сервер вернул неправильный тип данных');
+      }
+      
+      const data = await response.json();
+      console.log('[loadInitial] Loaded:', { 
+        productsCount: data.products?.length, 
+        total: data.total, 
+        hasMore: data.hasMore 
+      });
+      
+      setProducts(data.products);
+      setTotalCount(data.total);
+      setPage(0);
+      setHasMore(data.hasMore);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Произошла ошибка');
+    } finally {
+      setIsLoading(false);
     }
-  }, [hasMore, isLoading, page, loadProducts]);
+  }, [filters.q, filters.category]);
 
-  // Добавление обработчика прокрутки
+  // Перезагрузка при изменении фильтров
   useEffect(() => {
-    const scrollBox = scrollBoxRef.current;
-    if (!scrollBox) return;
+    setPage(0);
+    setProducts([]);
+    setHasMore(true);
+    loadInitial();
+    
+    // Прокручиваем наверх при новом поиске
+    if (scrollBoxRef.current) {
+      scrollBoxRef.current.scrollTop = 0;
+    }
+  }, [loadInitial]);
 
-    scrollBox.addEventListener('scroll', handleScroll);
-    return () => scrollBox.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  // Сортировка товаров на клиенте (поскольку API не поддерживает сортировку)
+  const sortedProducts = useMemo(() => {
+    const sorted = [...products];
+    
+    switch (filters.sort) {
+      case 'name_asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name_desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'price_asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price_desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      default:
+        return sorted;
+    }
+  }, [products, filters.sort]);
+
+  // Используем кастомный хук для Intersection Observer
+  useIntersectionObserver({
+    target: sentinelRef,
+    onIntersect: loadMore,
+    enabled: hasMore && !isLoading,
+    rootMargin: '100px',
+  });
 
   // Исправлена функция addToCart - используется функциональное обновление состояния
   function addToCart(productId: number, quantity: number) {
@@ -164,11 +254,35 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
   return (
     <Box 
       ref={scrollBoxRef}
-      overflow="auto" 
       height="100%"
-      sx={{ overflowY: 'scroll' }}
+      sx={{ 
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      }}
     >
       <Grid container spacing={2} p={2}>
+        {/* Счетчик результатов */}
+        {!isLoading && products.length > 0 && (
+          <Grid item xs={12}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" pb={1}>
+              <Typography variant="body1" color="text.secondary">
+                Найдено товаров: <strong>{totalCount}</strong>
+              </Typography>
+              {filters.sort && (
+                <Typography variant="body2" color="text.secondary">
+                  Сортировка: {
+                    filters.sort === 'name_asc' ? 'Название (А-Я)' :
+                    filters.sort === 'name_desc' ? 'Название (Я-А)' :
+                    filters.sort === 'price_asc' ? 'Цена (по возрастанию)' :
+                    'Цена (по убыванию)'
+                  }
+                </Typography>
+              )}
+            </Box>
+            <Divider />
+          </Grid>
+        )}
+
         {/* Ошибка API */}
         {error && (
           <Grid item xs={12}>
@@ -183,19 +297,26 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
           <Grid item xs={12}>
             <Box 
               display="flex" 
+              flexDirection="column"
               justifyContent="center" 
               alignItems="center" 
               minHeight="400px"
+              gap={2}
             >
               <Typography variant="h6" color="text.secondary">
                 Товары не найдены
               </Typography>
+              {(filters.q || filters.category) && (
+                <Typography variant="body2" color="text.secondary">
+                  Попробуйте изменить параметры поиска или фильтры
+                </Typography>
+              )}
             </Box>
           </Grid>
         )}
 
-        {/* Список товаров - ИСПРАВЛЕН key prop на Grid item */}
-        {products.map(product => (
+        {/* Список товаров - ИСПРАВЛЕН key prop на Grid item, используем отсортированный список */}
+        {sortedProducts.map(product => (
           <Grid item xs={12} sm={6} md={4} key={product.id}>
             {/* Do not remove this */}
             <HeavyComponent/>
@@ -251,11 +372,21 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
           </Grid>
         ))}
 
+        {/* Sentinel элемент для Intersection Observer */}
+        {hasMore && (
+          <Grid item xs={12}>
+            <Box ref={sentinelRef} sx={{ height: '1px' }} />
+          </Grid>
+        )}
+
         {/* Индикатор загрузки при подгрузке следующей страницы */}
-        {isLoading && (
+        {isLoading && products.length > 0 && (
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center" p={3}>
-              <CircularProgress />
+              <CircularProgress size={30} />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                Загрузка...
+              </Typography>
             </Box>
           </Grid>
         )}
@@ -265,7 +396,7 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center" p={3}>
               <Typography variant="body2" color="text.secondary">
-                Все товары загружены
+                Все товары загружены ({totalCount} из {totalCount})
               </Typography>
             </Box>
           </Grid>
