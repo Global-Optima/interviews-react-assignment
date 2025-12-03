@@ -1,127 +1,146 @@
-import { useEffect, useState } from 'react';
-import {
-  Box,
-  Card,
-  CardActions,
-  CardContent,
-  CardMedia,
-  Grid,
-  IconButton,
-  Typography,
-  CircularProgress,
-} from '@mui/material';
-import RemoveIcon from '@mui/icons-material/Remove';
-import AddIcon from '@mui/icons-material/Add';
-import { HeavyComponent } from './HeavyComponent.tsx';
+import { useCallback, memo } from "react";
+import { Box, Grid, Typography } from "@mui/material";
+import { HeavyComponent } from "./HeavyComponent.tsx";
+import { ProductCard } from "./components/ProductCard.tsx";
+import { Cart, Product } from "./types/Product.types.ts";
+import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
+import { useProducts } from "./hooks/useProducts";
 
-export type Product = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
-  category: string;
-  itemInCart: number;
-  loading: boolean;
-};
+export const Products = ({
+  onCartChange,
+  search,
+  category,
+}: {
+  onCartChange: (cart: Cart) => void;
+  search: string;
+  category: string | null;
+}) => {
+  const { products, setProducts, loading, hasMore, error, total, loadMore } =
+    useProducts(search, category);
 
-export type Cart = {
-  items: Product[];
-  totalPrice: number;
-  totalItems: number;
-}
-export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void }) => {
+  const addToCart = useCallback(
+    (productId: number, quantity: number) => {
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === productId
+            ? {
+                ...product,
+                loading: true,
+    
+                itemInCart: Math.max(
+                  0,
+                  (product.itemInCart || 0) + quantity
+                ),
+              }
+            : product
+        )
+      );
 
-  const [products, setProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    fetch('/products?limit=200').then(response => response.json()).then(data => setProducts(data.products));
-  }, []);
-
-  function addToCart(productId: number, quantity: number) {
-    setProducts(products.map(product => {
-      if (product.id === productId) {
-        return {
-          ...product,
-          loading: true,
-        };
-      }
-      return product;
-    }));
-    fetch('/cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ productId, quantity }),
-    }).then(async response => {
-      if (response.ok) {
-        const cart = await response.json();
-        setProducts(products.map(product => {
-          if (product.id === productId) {
-            return {
-              ...product,
-              itemInCart: (product.itemInCart || 0) + quantity,
-              loading: false,
-            };
+      fetch("/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, quantity }),
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to add item to cart");
           }
-          return product;
-        }));
-        onCartChange(cart);
+          return response.json();
+        })
+        .then((cart: Cart) => {
+          setProducts((prevProducts) =>
+            prevProducts.map((product) =>
+              product.id === productId
+                ? {
+                    ...product,
+                    loading: false,
+                  }
+                : product
+            )
+          );
+          onCartChange(cart);
+        })
+        .catch(() => {
+          setProducts((prevProducts) =>
+            prevProducts.map((product) =>
+              product.id === productId
+                ? {
+                    ...product,
+                    loading: false,
+     
+                    itemInCart: Math.max(
+                      0,
+                      (product.itemInCart || 0) - quantity
+                    ),
+                  }
+                : product
+            )
+          );
+        });
+    },
+    [setProducts, onCartChange]
+  );
 
-      }
-    });
-  }
+  const loaderRef = useInfiniteScroll({
+    hasMore,
+    loading,
+    onLoadMore: loadMore,
+  });
+
+  const ProductRow = memo(
+    ({ product, addToCart }: ProductRowProps) => (
+      <Grid item xs={4}>
+        {/* Do not remove this */}
+        <HeavyComponent />
+        <ProductCard product={product} addToCart={addToCart} />
+      </Grid>
+    )
+  );
 
   return (
     <Box overflow="scroll" height="100%">
+      {!error && search && (
+        <Box px={2} pt={1}>
+          <Typography variant="subtitle2">
+            {total} result{total === 1 ? "" : "s"} for &quot;{search}&quot;
+          </Typography>
+        </Box>
+      )}
+
+      {!loading && products.length === 0 && !error && (
+        <Typography textAlign="center" mt={4}>No products found.</Typography>
+      )}
+
+      {error && (
+        <Box marginTop="40px" textAlign="center">
+          <Typography color="error">{error}</Typography>
+        </Box>
+      )}
+
       <Grid container spacing={2} p={2}>
-        {products.map(product => (
-          <Grid item xs={4}>
-            {/* Do not remove this */}
-            <HeavyComponent/>
-            <Card key={product.id} style={{ width: '100%' }}>
-              <CardMedia
-                component="img"
-                height="150"
-                image={product.imageUrl}
-              />
-              <CardContent>
-                <Typography gutterBottom variant="h6" component="div">
-                  {product.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Typography variant="h6" component="div">
-                  ${product.price}
-                </Typography>
-                <Box flexGrow={1}/>
-                <Box position="relative" display="flex" flexDirection="row" alignItems="center">
-                  <Box position="absolute" left={0} right={0} top={0} bottom={0} textAlign="center">
-                    {product.loading && <CircularProgress size={20}/>}
-                  </Box>
-                  <IconButton disabled={product.loading} aria-label="delete" size="small"
-                              onClick={() => addToCart(product.id, -1)}>
-                    <RemoveIcon fontSize="small"/>
-                  </IconButton>
-
-                  <Typography variant="body1" component="div" mx={1}>
-                    {product.itemInCart || 0}
-                  </Typography>
-
-                  <IconButton disabled={product.loading} aria-label="add" size="small"
-                              onClick={() => addToCart(product.id, 1)}>
-                    <AddIcon fontSize="small"/>
-                  </IconButton>
-                </Box>
-
-              </CardActions>
-            </Card>
-          </Grid>
+        {products.map((product) => (
+          <ProductRow
+            key={product.id}
+            product={product}
+            addToCart={addToCart}
+          />
         ))}
       </Grid>
+
+      {!error && <div ref={loaderRef} style={{ height: 40 }} />}
+
+      {loading && (
+        <Typography textAlign="center">Loading...</Typography>
+      )}
+
+      {!loading && !hasMore && !error && products.length > 0 && (
+        <Typography textAlign="center">No more products.</Typography>
+      )}
     </Box>
   );
 };
+
+interface ProductRowProps {
+  product: Product;
+  addToCart: (productId: number, quantity: number) => void;
+}
