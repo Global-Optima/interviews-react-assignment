@@ -4,20 +4,13 @@ import { useProductFilters } from '../hooks/useProductFilters';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useInfiniteProducts } from '../hooks/useInfiniteProducts';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import { useCart } from '../hooks/useCart';
 import { ProductFilters } from './ProductFilters';
 import { VirtualizedProductGrid } from './VirtualizedProductGrid';
 
-export interface Cart {
-  items: Array<{ id: number; quantity: number }>;
-  totalPrice: number;
-  totalItems: number;
-}
-
-interface ProductsPageProps {
-  onCartChange: (cart: Cart) => void;
-}
-
-export function ProductsPage({ onCartChange }: ProductsPageProps) {
+export function ProductsPage() {
+  // Управление корзиной через dedicated hook с оптимистичными обновлениями
+  const { updateCartItem, getItemQuantity } = useCart();
   // Управление фильтрами через URL
   const { filters, updateFilters, clearFilters } = useProductFilters();
 
@@ -63,44 +56,36 @@ export function ProductsPage({ onCartChange }: ProductsPageProps) {
   });
 
   // Обработчик добавления товара в корзину
-  // Обернуто в useCallback для стабильности ссылки и оптимизации рендеринга
+  // Использует useCart hook с оптимистичными обновлениями и функциональными setState
+  // Это полностью устраняет проблемы stale closure
   const handleAddToCart = useCallback(async (productId: number, quantity: number) => {
-    // Обновляем UI оптимистично
+    // Устанавливаем loading состояние используя функциональное обновление
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, loading: true } : p))
     );
 
-    try {
-      const response = await fetch('/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
-      });
-
-      if (response.ok) {
-        const cart = await response.json();
-        
-        // Обновляем количество в корзине для товара
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === productId
-              ? { ...p, itemInCart: (p.itemInCart || 0) + quantity, loading: false }
-              : p
-          )
-        );
-        
-        onCartChange(cart);
-      } else {
-        throw new Error('Failed to update cart');
-      }
-    } catch (err) {
-      console.error('Cart update error:', err);
-      // Откатываем loading состояние
-      setProducts((prev) =>
-        prev.map((p) => (p.id === productId ? { ...p, loading: false } : p))
-      );
+    // useCart внутри делает оптимистичное обновление с автоматическим rollback при ошибке
+    const success = await updateCartItem(productId, quantity);
+    
+    // Обновляем состояние товара на основе результата, используя функциональное обновление
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === productId) {
+          const currentQty = getItemQuantity(productId);
+          return {
+            ...p,
+            itemInCart: currentQty,
+            loading: false,
+          };
+        }
+        return p;
+      })
+    );
+    
+    if (!success) {
+      console.error('Failed to update cart for product', productId);
     }
-  }, [onCartChange, setProducts]);
+  }, [updateCartItem, getItemQuantity, setProducts]);
 
   return (
     <Box

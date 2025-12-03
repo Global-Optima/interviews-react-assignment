@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
 import { useProductFilters } from './hooks/useProductFilters.ts';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
+import { useCart } from './hooks/useCart.ts';
 
 export type Product = {
   id: number;
@@ -28,16 +29,11 @@ export type Product = {
   loading: boolean;
 };
 
-export type Cart = {
-  items: Product[];
-  totalPrice: number;
-  totalItems: number;
-}
-
 const PRODUCTS_PER_PAGE = 20;
 
-export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void }) => {
+export const Products = () => {
   const { filters } = useProductFilters();
+  const { updateCartItem, getItemQuantity } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -193,64 +189,34 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
     rootMargin: '100px',
   });
 
-  // Исправлена функция addToCart - используется функциональное обновление состояния
-  // Обернуто в useCallback для стабильности ссылки и предотвращения ненужных ререндеров
-  const addToCart = useCallback((productId: number, quantity: number) => {
+  // Функция addToCart теперь использует useCart hook для оптимистичных обновлений
+  // и полностью избегает stale closures через функциональные setState
+  const addToCart = useCallback(async (productId: number, quantity: number) => {
+    // Устанавливаем loading состояние для конкретного товара используя функциональное обновление
+    setProducts(prev => prev.map(product =>
+      product.id === productId ? { ...product, loading: true } : product
+    ));
+    
+    // Используем useCart который внутри делает оптимистичные обновления с функциональным setState
+    const success = await updateCartItem(productId, quantity);
+    
+    // Обновляем состояние товара на основе результата
     setProducts(prev => prev.map(product => {
       if (product.id === productId) {
+        const currentQty = getItemQuantity(productId);
         return {
           ...product,
-          loading: true,
+          itemInCart: currentQty,
+          loading: false,
         };
       }
       return product;
     }));
     
-    fetch('/cart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ productId, quantity }),
-    }).then(async response => {
-      if (response.ok) {
-        const cart = await response.json();
-        setProducts(prev => prev.map(product => {
-          if (product.id === productId) {
-            return {
-              ...product,
-              itemInCart: (product.itemInCart || 0) + quantity,
-              loading: false,
-            };
-          }
-          return product;
-        }));
-        onCartChange(cart);
-      } else {
-        // Откатить loading состояние при ошибке
-        setProducts(prev => prev.map(product => {
-          if (product.id === productId) {
-            return {
-              ...product,
-              loading: false,
-            };
-          }
-          return product;
-        }));
-      }
-    }).catch(() => {
-      // Обработка ошибок сети
-      setProducts(prev => prev.map(product => {
-        if (product.id === productId) {
-          return {
-            ...product,
-            loading: false,
-          };
-        }
-        return product;
-      }));
-    });
-  }, [onCartChange]);
+    if (!success) {
+      console.error('Failed to update cart for product', productId);
+    }
+  }, [updateCartItem, getItemQuantity]);
 
   return (
     <Box 

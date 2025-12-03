@@ -1,17 +1,11 @@
-import { Cart, Products } from './Products.tsx';
+import { Products } from './Products.tsx';
 import { Box, CssBaseline } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
-import { useState } from 'react';
+import { useCart } from './hooks/useCart.ts';
 
 function App() {
-
-  const [cart, setCart] = useState<Cart>();
-
-
-  function onCartChange(cart: Cart) {
-    setCart(cart);
-  }
+  const { cart } = useCart();
 
   return (
     <Box 
@@ -34,7 +28,7 @@ function App() {
       >
         <Categories/>
         <Box flex={1}>
-          <Products onCartChange={onCartChange}/>
+          <Products/>
         </Box>
       </Box>
     </Box>
