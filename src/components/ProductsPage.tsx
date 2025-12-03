@@ -115,12 +115,7 @@ export function ProductsPage() {
       {error && (
         <Alert 
           severity="error" 
-          sx={{ 
-            mb: 2,
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-          }} 
+          sx={{ mb: 2 }} 
           onClose={() => {}}
         >
           {error}
@@ -136,13 +131,24 @@ export function ProductsPage() {
           alignItems="center"
           minHeight="400px"
           gap={2}
+          sx={{
+            backgroundColor: 'background.paper',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            p: 4,
+          }}
         >
-          <Typography variant="h6" color="text.secondary">
+          <Typography 
+            variant="h5" 
+            color="text.primary"
+            fontWeight={600}
+          >
             No products found
           </Typography>
           {(filters.q || filters.category || filters.minPrice || filters.maxPrice) && (
-            <Typography variant="body2" color="text.secondary">
-              Try adjusting your search or filters
+            <Typography variant="body1" color="text.secondary" textAlign="center">
+              Try adjusting your search or filters to find what you're looking for
             </Typography>
           )}
         </Box>
@@ -169,9 +175,22 @@ export function ProductsPage() {
 
       {/* Индикатор загрузки при первоначальной загрузке */}
       {isLoading && products.length === 0 && (
-        <Box display="flex" justifyContent="center" p={3} gap={2}>
-          <CircularProgress size={30} />
-          <Typography variant="body2" color="text.secondary">
+        <Box 
+          display="flex" 
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          p={6} 
+          gap={2}
+          sx={{
+            backgroundColor: 'background.paper',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CircularProgress size={40} thickness={4} />
+          <Typography variant="body1" color="text.secondary" fontWeight={500}>
             Loading products...
           </Typography>
         </Box>
@@ -179,9 +198,19 @@ export function ProductsPage() {
 
       {/* Сообщение об окончании списка */}
       {!hasMore && products.length > 0 && (
-        <Box display="flex" justifyContent="center" p={2}>
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          p={2}
+          sx={{
+            backgroundColor: 'background.paper',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
-            All products loaded ({totalCount} total)
+            All products loaded • {totalCount} total
           </Typography>
         </Box>
       )}

@@ -1,5 +1,5 @@
 import { Products } from './Products.tsx';
-import { Box, CssBaseline } from '@mui/material';
+import { Box, Container, Stack } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
 import { useCart } from './hooks/useCart.ts';
@@ -8,29 +8,52 @@ function App() {
   const { cart } = useCart();
 
   return (
-    <Box 
-      height="100vh" 
-      display="flex" 
-      flexDirection="column"
+    <Box
       sx={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
       }}
     >
-      <CssBaseline/>
-      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-      <Box 
-        flex={1} 
-        display="flex" 
-        flexDirection="row"
+      {/* Header */}
+      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0} />
+      
+      {/* Main Content */}
+      <Container
+        maxWidth="xl"
+        disableGutters
         sx={{
-          overflow: 'hidden',
+          px: { xs: 2, sm: 3, md: 4 },
+          py: 3,
         }}
       >
-        <Categories/>
-        <Box flex={1}>
-          <Products/>
-        </Box>
-      </Box>
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={{ xs: 2, md: 3 }}
+          sx={{
+            minHeight: 'calc(100vh - 80px)',
+          }}
+        >
+          {/* Sidebar - Categories */}
+          <Box
+            sx={{
+              width: { xs: '100%', md: 260 },
+              flexShrink: 0,
+            }}
+          >
+            <Categories />
+          </Box>
+
+          {/* Main Content - Products */}
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <Products />
+          </Box>
+        </Stack>
+      </Container>
     </Box>
   );
 }

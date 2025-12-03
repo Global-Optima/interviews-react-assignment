@@ -3,7 +3,6 @@ import {
   Button,
   Chip,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
   Stack,
@@ -91,58 +90,42 @@ export function ProductFilters({
 
   return (
     <Paper 
-      elevation={0} 
+      elevation={1} 
       sx={{ 
-        p: 3, 
+        p: { xs: 2, sm: 3 }, 
         mb: 3,
-        borderRadius: '20px',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15)',
+        backgroundColor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
       }}
     >
       <Stack spacing={3}>
         {/* Header с результатами и кнопкой очистки */}
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography 
-            variant="h5" 
-            component="div"
-            sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 700,
-            }}
-          >
-            Filters
-          </Typography>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="body2" color="text.secondary">
-              <strong>{resultsCount}</strong> {resultsCount === 1 ? 'result' : 'results'}
+        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+          <Box>
+            <Typography 
+              variant="h5" 
+              component="div"
+              color="primary.main"
+              sx={{ fontWeight: 700, mb: 0.5 }}
+            >
+              Filters
             </Typography>
-            {hasActiveFilters && (
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<ClearIcon />}
-                onClick={onClearFilters}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  borderRadius: '12px',
-                  px: 2,
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
+            <Typography variant="body2" color="text.secondary">
+              <strong>{resultsCount}</strong> {resultsCount === 1 ? 'product' : 'products'} found
+            </Typography>
           </Box>
+          {hasActiveFilters && (
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              startIcon={<ClearIcon />}
+              onClick={onClearFilters}
+            >
+              Clear Filters
+            </Button>
+          )}
         </Box>
 
         <Divider />
@@ -176,7 +159,7 @@ export function ProductFilters({
 
         {/* Категории */}
         <Box>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
             Category
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -185,25 +168,11 @@ export function ProductFilters({
                 key={category.value}
                 label={category.label}
                 onClick={() => onChangeFilters({ category: category.value || undefined })}
+                color={filters.category === category.value ? 'primary' : 'default'}
                 variant={filters.category === category.value ? 'filled' : 'outlined'}
                 sx={{ 
                   mb: 1,
-                  borderRadius: '12px',
-                  fontWeight: filters.category === category.value ? 700 : 400,
-                  ...(filters.category === category.value ? {
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    border: 'none',
-                  } : {
-                    borderColor: '#667eea',
-                    color: '#667eea',
-                  }),
-                  '&:hover': {
-                    background: filters.category === category.value 
-                      ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)'
-                      : 'rgba(102, 126, 234, 0.08)',
-                  },
-                  transition: 'all 0.2s ease',
+                  fontWeight: filters.category === category.value ? 600 : 400,
                 }}
               />
             ))}
@@ -211,25 +180,27 @@ export function ProductFilters({
         </Box>
 
         {/* Сортировка */}
-        <FormControl size="small" fullWidth>
-          <InputLabel id="sort-label">Sort By</InputLabel>
-          <Select
-            labelId="sort-label"
-            label="Sort By"
-            value={filters.sort}
-            onChange={(e) => onChangeFilters({ sort: e.target.value as SortOption })}
-          >
-            {SORT_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box>
+          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
+            Sort By
+          </Typography>
+          <FormControl size="small" fullWidth>
+            <Select
+              value={filters.sort}
+              onChange={(e) => onChangeFilters({ sort: e.target.value as SortOption })}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
         {/* Диапазон цен */}
         <Box>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
             Price Range
           </Typography>
           <Stack direction="row" spacing={2} alignItems="center">

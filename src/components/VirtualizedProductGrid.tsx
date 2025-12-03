@@ -13,8 +13,8 @@ interface VirtualizedProductGridProps {
   isLoading: boolean;
 }
 
-const CARD_HEIGHT = 420; // Approximate height of ProductCard
-const GAP = 16; // Grid spacing in pixels
+const CARD_HEIGHT = 460; // Approximate height of ProductCard with new layout
+const GAP = 24; // Grid spacing in pixels
 
 export const VirtualizedProductGrid = React.memo(function VirtualizedProductGrid({
   products,
@@ -36,7 +36,7 @@ export const VirtualizedProductGrid = React.memo(function VirtualizedProductGrid
     if (isXs) return 1;
     if (isSm) return 2;
     if (isMd) return 3;
-    return 3; // lg and up
+    return 4; // lg and up - 4 columns on large screens
   }, [isXs, isSm, isMd]);
 
   // Calculate rows needed for the grid layout
@@ -80,9 +80,9 @@ export const VirtualizedProductGrid = React.memo(function VirtualizedProductGrid
 
     return (
       <div style={style}>
-        <Grid container spacing={2} sx={{ px: 1 }}>
+        <Grid container spacing={3}>
           {rowProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product.id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
               <ProductCard product={product} onAddToCart={onAddToCart} />
             </Grid>
           ))}

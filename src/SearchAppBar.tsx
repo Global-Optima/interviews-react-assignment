@@ -15,21 +15,21 @@ import { useDebouncedValue } from './hooks/useDebouncedValue.ts';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: '24px',
-  backgroundColor: 'rgba(102, 126, 234, 0.08)',
-  border: '2px solid rgba(102, 126, 234, 0.2)',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.grey[100],
+  border: `1px solid ${theme.palette.divider}`,
   '&:hover': {
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
-    borderColor: 'rgba(102, 126, 234, 0.4)',
+    backgroundColor: theme.palette.grey[200],
+    borderColor: theme.palette.primary.light,
   },
   '&:focus-within': {
-    borderColor: '#667eea',
-    boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 2px ${theme.palette.primary.main}20`,
   },
   marginLeft: 0,
   marginRight: theme.spacing(2),
   width: '100%',
-  transition: 'all 0.3s ease',
+  transition: 'all 0.2s ease',
   [theme.breakpoints.up('sm')]: {
     marginLeft: theme.spacing(1),
     width: 'auto',
@@ -47,21 +47,21 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: '#1a1a1a',
+  color: theme.palette.text.primary,
   width: '100%',
-  fontWeight: 500,
+  fontWeight: 400,
   '& .MuiInputBase-input': {
     padding: theme.spacing(1.2, 1, 1.2, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     '&::placeholder': {
-      color: 'rgba(102, 126, 234, 0.6)',
-      opacity: 1,
+      color: theme.palette.text.secondary,
+      opacity: 0.7,
     },
     [theme.breakpoints.up('sm')]: {
-      width: '14ch',
+      width: '16ch',
       '&:focus': {
-        width: '24ch',
+        width: '28ch',
       },
     },
   },
@@ -106,16 +106,16 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
   return (
     <Box>
       <AppBar 
-        position="relative"
-        elevation={0}
+        position="sticky"
+        elevation={1}
         sx={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          color: '#1a1a1a',
-          borderBottom: '1px solid rgba(102, 126, 234, 0.1)',
+          backgroundColor: 'background.paper',
+          color: 'text.primary',
+          borderBottom: 1,
+          borderColor: 'divider',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ py: 1 }}>
           <Typography
             variant="h5"
             noWrap
@@ -123,14 +123,12 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
             sx={{ 
               display: { xs: 'none', sm: 'block' }, 
               mr: 3,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 800,
-              letterSpacing: '0.5px',
+              color: 'primary.main',
+              fontWeight: 700,
+              letterSpacing: '-0.5px',
             }}
           >
-            🛒 TechHub
+            ⚡ TechHub
           </Typography>
           
           <Search>
@@ -160,41 +158,50 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
             )}
           </Search>
 
-          <FormControl size="small" sx={{ minWidth: 150, ml: 2 }}>
+          <FormControl 
+            size="small" 
+            sx={{ 
+              minWidth: { xs: 120, sm: 160 }, 
+              ml: { xs: 1, sm: 2 },
+              display: { xs: 'none', sm: 'block' },
+            }}
+          >
             <Select
               value={filters.sort}
               onChange={(e) => updateFilters({ sort: e.target.value as typeof filters.sort })}
               displayEmpty
               sx={{ 
-                color: '#1a1a1a',
-                borderRadius: '12px',
-                background: 'rgba(102, 126, 234, 0.08)',
-                fontWeight: 500,
-                '.MuiOutlinedInput-notchedOutline': { 
-                  borderColor: 'rgba(102, 126, 234, 0.2)',
-                  borderWidth: '2px',
+                borderRadius: 2,
+                backgroundColor: 'grey.100',
+                '& .MuiOutlinedInput-notchedOutline': { 
+                  borderColor: 'divider',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': { 
-                  borderColor: 'rgba(102, 126, 234, 0.4)',
+                  borderColor: 'primary.light',
                 },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { 
-                  borderColor: '#667eea',
+                  borderColor: 'primary.main',
                 },
-                '.MuiSvgIcon-root': { color: '#667eea' }
               }}
             >
-              <MenuItem value="price_asc">Цена (по возрастанию)</MenuItem>
-              <MenuItem value="price_desc">Цена (по убыванию)</MenuItem>
-              <MenuItem value="name_asc">Название (А-Я)</MenuItem>
-              <MenuItem value="name_desc">Название (Я-А)</MenuItem>
+              <MenuItem value="price_asc">Цена ↑</MenuItem>
+              <MenuItem value="price_desc">Цена ↓</MenuItem>
+              <MenuItem value="name_asc">А-Я</MenuItem>
+              <MenuItem value="name_desc">Я-А</MenuItem>
             </Select>
           </FormControl>
 
           {hasActiveFilters && (
             <IconButton
-              color="inherit"
+              color="primary"
               onClick={clearFilters}
-              sx={{ ml: 1 }}
+              sx={{ 
+                ml: 1,
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  color: 'primary.contrastText',
+                },
+              }}
               title="Очистить все фильтры"
             >
               <FilterListIcon />
@@ -203,37 +210,74 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
 
           <Box flexGrow={1} />
 
-          <Box display="flex" flexDirection="row" mx={2}>
-            <Typography variant="h6" noWrap component="div" mr={2}>
-              Итого:
-            </Typography>
-            <Typography variant="h6" noWrap component="div">
-              $ {(price || 0).toFixed(2)}
-            </Typography>
-          </Box>
-          <Badge 
-            badgeContent={quantity || 0}
-            sx={{
-              '& .MuiBadge-badge': {
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                fontWeight: 700,
-              }
+          <Box 
+            display="flex" 
+            alignItems="center"
+            gap={1}
+            sx={{ 
+              display: { xs: 'none', md: 'flex' },
+              px: 2,
+              py: 1,
+              backgroundColor: 'grey.100',
+              borderRadius: 2,
+              mr: 2,
             }}
           >
-            <ShoppingCartIcon sx={{ color: '#667eea', fontSize: '28px' }} />
-          </Badge>
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              Итого:
+            </Typography>
+            <Typography variant="h6" color="primary.main" fontWeight={700}>
+              ${(price || 0).toFixed(2)}
+            </Typography>
+          </Box>
+          
+          <IconButton
+            color="primary"
+            sx={{
+              position: 'relative',
+              '&:hover': {
+                backgroundColor: 'primary.light',
+                color: 'primary.contrastText',
+              },
+            }}
+          >
+            <Badge 
+              badgeContent={quantity || 0}
+              color="error"
+              sx={{
+                '& .MuiBadge-badge': {
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                },
+              }}
+            >
+              <ShoppingCartIcon />
+            </Badge>
+          </IconButton>
         </Toolbar>
         
-        {/* Индикаторы активных фильтров */}
+        {/* Active Filters Chips */}
         {hasActiveFilters && (
-          <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Box 
+            sx={{ 
+              px: { xs: 2, sm: 3 }, 
+              pb: 1.5, 
+              pt: 0.5,
+              display: 'flex', 
+              gap: 1, 
+              flexWrap: 'wrap',
+              borderTop: 1,
+              borderColor: 'divider',
+              backgroundColor: 'grey.50',
+            }}
+          >
             {filters.q && (
               <Chip
                 label={`Поиск: "${filters.q}"`}
                 size="small"
                 onDelete={handleClearSearch}
-                sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
+                color="primary"
+                variant="outlined"
               />
             )}
             {filters.category && (
@@ -241,7 +285,8 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
                 label={`Категория: ${filters.category}`}
                 size="small"
                 onDelete={() => updateFilters({ category: undefined })}
-                sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
+                color="primary"
+                variant="outlined"
               />
             )}
             {filters.sort && filters.sort !== 'price_asc' && (() => {
@@ -256,7 +301,8 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
                   label={`Сортировка: ${labels[filters.sort] ?? 'Цена ↑'}`}
                   size="small"
                   onDelete={() => updateFilters({ sort: 'price_asc' })}
-                  sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
+                  color="primary"
+                  variant="outlined"
                 />
               );
             })()}
@@ -265,7 +311,8 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
                 label={`Мин: $${filters.minPrice}`}
                 size="small"
                 onDelete={() => updateFilters({ minPrice: undefined })}
-                sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
+                color="primary"
+                variant="outlined"
               />
             )}
             {filters.maxPrice && (
@@ -273,7 +320,8 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
                 label={`Макс: $${filters.maxPrice}`}
                 size="small"
                 onDelete={() => updateFilters({ maxPrice: undefined })}
-                sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
+                color="primary"
+                variant="outlined"
               />
             )}
           </Box>
