@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Grid, CircularProgress, Alert, Typography } from '@mui/material';
+import { Box, CircularProgress, Alert, Typography } from '@mui/material';
 import { useProductFilters } from '../hooks/useProductFilters';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useInfiniteProducts } from '../hooks/useInfiniteProducts';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { ProductFilters } from './ProductFilters';
-import { ProductCard } from './ProductCard';
+import { VirtualizedProductGrid } from './VirtualizedProductGrid';
 
 export interface Cart {
   items: Array<{ id: number; quantity: number }>;
@@ -163,44 +163,43 @@ export function ProductsPage({ onCartChange }: ProductsPageProps) {
         </Box>
       )}
 
-      {/* Сетка товаров */}
-      <Grid container spacing={2}>
-        {products.map((product) => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
-            <ProductCard product={product} onAddToCart={handleAddToCart} />
-          </Grid>
-        ))}
+      {/* Виртуализированная сетка товаров */}
+      {products.length > 0 && (
+        <Box
+          sx={{
+            height: 'calc(100vh - 350px)', // Adjust based on filters height
+            minHeight: '500px',
+            mb: 2,
+          }}
+        >
+          <VirtualizedProductGrid
+            products={products}
+            onAddToCart={handleAddToCart}
+            onLoadMore={loadMore}
+            hasMore={hasMore}
+            isLoading={isLoading}
+          />
+        </Box>
+      )}
 
-        {/* Sentinel для Intersection Observer */}
-        {hasMore && (
-          <Grid item xs={12}>
-            <Box ref={sentinelRef} sx={{ height: '1px' }} />
-          </Grid>
-        )}
+      {/* Индикатор загрузки при первоначальной загрузке */}
+      {isLoading && products.length === 0 && (
+        <Box display="flex" justifyContent="center" p={3} gap={2}>
+          <CircularProgress size={30} />
+          <Typography variant="body2" color="text.secondary">
+            Loading products...
+          </Typography>
+        </Box>
+      )}
 
-        {/* Индикатор загрузки */}
-        {isLoading && products.length > 0 && (
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="center" p={3} gap={2}>
-              <CircularProgress size={30} />
-              <Typography variant="body2" color="text.secondary">
-                Loading more products...
-              </Typography>
-            </Box>
-          </Grid>
-        )}
-
-        {/* Сообщение об окончании списка */}
-        {!hasMore && products.length > 0 && (
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="center" p={3}>
-              <Typography variant="body2" color="text.secondary">
-                All products loaded ({totalCount} total)
-              </Typography>
-            </Box>
-          </Grid>
-        )}
-      </Grid>
+      {/* Сообщение об окончании списка */}
+      {!hasMore && products.length > 0 && (
+        <Box display="flex" justifyContent="center" p={2}>
+          <Typography variant="body2" color="text.secondary">
+            All products loaded ({totalCount} total)
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 }
