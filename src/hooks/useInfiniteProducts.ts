@@ -31,12 +31,24 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loadingRef = useRef(false);
+  
+  // AbortController для отмены устаревших запросов
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Функция для загрузки следующей страницы
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore || isLoading) {
       return;
     }
+
+    // Отменяем предыдущий запрос если он еще выполняется
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Создаем новый AbortController для этого запроса
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     loadingRef.current = true;
     setIsLoading(true);
@@ -50,7 +62,9 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
       if (q) params.set('q', q);
       if (category) params.set('category', category);
 
-      const response = await fetch(`/products?${params.toString()}`);
+      const response = await fetch(`/products?${params.toString()}`, {
+        signal: abortController.signal,
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load products: ${response.status}`);
@@ -63,20 +77,42 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
 
       const data = await response.json();
 
-      setProducts((prev) => [...prev, ...data.products]);
-      setTotalCount(data.total);
-      setPage((prev) => prev + 1);
-      setHasMore(data.hasMore);
+      // Проверяем, что запрос не был отменен перед обновлением состояния
+      if (!abortController.signal.aborted) {
+        setProducts((prev) => [...prev, ...data.products]);
+        setTotalCount(data.total);
+        setPage((prev) => prev + 1);
+        setHasMore(data.hasMore);
+      }
     } catch (err) {
+      // Игнорируем ошибки отмены запроса - они не являются реальными ошибками
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('[useInfiniteProducts] Request aborted (expected)');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
+      
+      // Очищаем ссылку если это был текущий контроллер
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }, [page, hasMore, isLoading, q, category]);
 
   // Функция для начальной загрузки (перезагрузка при изменении фильтров)
   const loadInitial = useCallback(async () => {
+    // Отменяем все предыдущие запросы при изменении фильтров
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Создаем новый AbortController для начальной загрузки
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setIsLoading(true);
     setError(null);
     loadingRef.current = true;
@@ -89,7 +125,9 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
       if (q) params.set('q', q);
       if (category) params.set('category', category);
 
-      const response = await fetch(`/products?${params.toString()}`);
+      const response = await fetch(`/products?${params.toString()}`, {
+        signal: abortController.signal,
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load products: ${response.status}`);
@@ -102,15 +140,28 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
 
       const data = await response.json();
 
-      setProducts(data.products);
-      setTotalCount(data.total);
-      setPage(0);
-      setHasMore(data.hasMore);
+      // Проверяем, что запрос не был отменен перед обновлением состояния
+      if (!abortController.signal.aborted) {
+        setProducts(data.products);
+        setTotalCount(data.total);
+        setPage(0);
+        setHasMore(data.hasMore);
+      }
     } catch (err) {
+      // Игнорируем ошибки отмены запроса - они не являются реальными ошибками
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('[useInfiniteProducts] Initial load aborted (expected - filters changed)');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
+      
+      // Очищаем ссылку если это был текущий контроллер
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }, [q, category]);
 
@@ -120,6 +171,13 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
     setPage(0);
     setHasMore(true);
     loadInitial();
+    
+    // Cleanup: отменяем запросы при размонтировании компонента
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [loadInitial]);
 
   // Применяем сортировку на клиенте

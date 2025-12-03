@@ -43,6 +43,9 @@ export const Products = () => {
   const [error, setError] = useState<string | null>(null);
   const scrollBoxRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  
+  // AbortController для отмены устаревших запросов
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Функция loadMore для загрузки следующей страницы
   const loadMore = useCallback(async () => {
@@ -51,6 +54,15 @@ export const Products = () => {
       console.log('[loadMore] Skipped:', { isLoading, hasMore });
       return;
     }
+
+    // Отменяем предыдущий запрос если он еще выполняется
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Создаем новый AbortController для этого запроса
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     console.log('[loadMore] Loading page:', page + 1);
     setIsLoading(true);
@@ -69,7 +81,9 @@ export const Products = () => {
         params.set('category', filters.category);
       }
 
-      const response = await fetch(`/products?${params.toString()}`);
+      const response = await fetch(`/products?${params.toString()}`, {
+        signal: abortController.signal,
+      });
       
       if (!response.ok) {
         throw new Error(`Не удалось загрузить товары: ${response.status}`);
@@ -87,24 +101,46 @@ export const Products = () => {
         hasMore: data.hasMore 
       });
       
-      // Добавляем новые товары к существующим
-      setProducts(prev => [...prev, ...data.products]);
-      setTotalCount(data.total);
-      
-      // Увеличиваем номер страницы
-      setPage(prev => prev + 1);
-      
-      // Обновляем hasMore на основе ответа API
-      setHasMore(data.hasMore);
+      // Проверяем, что запрос не был отменен перед обновлением состояния
+      if (!abortController.signal.aborted) {
+        // Добавляем новые товары к существующим
+        setProducts(prev => [...prev, ...data.products]);
+        setTotalCount(data.total);
+        
+        // Увеличиваем номер страницы
+        setPage(prev => prev + 1);
+        
+        // Обновляем hasMore на основе ответа API
+        setHasMore(data.hasMore);
+      }
     } catch (err) {
+      // Игнорируем ошибки отмены запроса
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('[Products.loadMore] Request aborted (expected)');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
     } finally {
       setIsLoading(false);
+      
+      // Очищаем ссылку если это был текущий контроллер
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }, [isLoading, hasMore, page, filters.q, filters.category]);
 
   // Начальная загрузка товаров
   const loadInitial = useCallback(async () => {
+    // Отменяем все предыдущие запросы при изменении фильтров
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Создаем новый AbortController для начальной загрузки
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     console.log('[loadInitial] Starting initial load');
     setIsLoading(true);
     setError(null);
@@ -121,7 +157,9 @@ export const Products = () => {
         params.set('category', filters.category);
       }
 
-      const response = await fetch(`/products?${params.toString()}`);
+      const response = await fetch(`/products?${params.toString()}`, {
+        signal: abortController.signal,
+      });
       
       if (!response.ok) {
         throw new Error(`Не удалось загрузить товары: ${response.status}`);
@@ -139,14 +177,27 @@ export const Products = () => {
         hasMore: data.hasMore 
       });
       
-      setProducts(data.products);
-      setTotalCount(data.total);
-      setPage(0);
-      setHasMore(data.hasMore);
+      // Проверяем, что запрос не был отменен перед обновлением состояния
+      if (!abortController.signal.aborted) {
+        setProducts(data.products);
+        setTotalCount(data.total);
+        setPage(0);
+        setHasMore(data.hasMore);
+      }
     } catch (err) {
+      // Игнорируем ошибки отмены запроса
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('[Products.loadInitial] Request aborted (expected - filters changed)');
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
     } finally {
       setIsLoading(false);
+      
+      // Очищаем ссылку если это был текущий контроллер
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }, [filters.q, filters.category]);
 
@@ -161,6 +212,13 @@ export const Products = () => {
     if (scrollBoxRef.current) {
       scrollBoxRef.current.scrollTop = 0;
     }
+    
+    // Cleanup: отменяем запросы при размонтировании компонента
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [loadInitial]);
 
   // Сортировка товаров на клиенте (поскольку API не поддерживает сортировку)
