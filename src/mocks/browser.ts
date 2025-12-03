@@ -1,10 +1,8 @@
-import { setupWorker } from 'msw/browser'
-import { handlers } from './handlers'
+import { setupWorker } from "msw/browser";
+import { handlers } from "./handlers";
 
-export const worker = setupWorker(...handlers)
-
-
+export const worker = setupWorker(...handlers);
 
 export function enableMockServiceWorker() {
-  return worker.start()
+  return worker.start();
 }

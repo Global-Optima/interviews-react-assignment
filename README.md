@@ -1,7 +1,7 @@
 <!--
 Hi! We're happy you opened this file, not everyone does!
-To let us know you did, add a 🚀 emoji next to your name 
-in the How to Run section 😊 
+To let us know you did, add a 🚀 emoji next to your name
+in the How to Run section 😊
 These will be extra points for you!
 -->
 
@@ -21,14 +21,14 @@ Fork this repository and treat it as a real-world project. We'll review your wor
 
 Your submission will be assessed on:
 
-* **Code Quality** - Clean, readable, maintainable code
-* **Architecture & Design Patterns** - Proper separation of concerns, reusable components
-* **Performance Optimization** - Efficient rendering, proper memoization
-* **TypeScript Usage** - Strong typing, proper interfaces
-* **Project Structure** - Logical organization, scalability
-* **Git Workflow** - Meaningful commits, branch strategy
-* **Testing** (bonus) - Unit tests, integration tests
-* **Documentation** - Clear README, code comments where needed
+- **Code Quality** - Clean, readable, maintainable code
+- **Architecture & Design Patterns** - Proper separation of concerns, reusable components
+- **Performance Optimization** - Efficient rendering, proper memoization
+- **TypeScript Usage** - Strong typing, proper interfaces
+- **Project Structure** - Logical organization, scalability
+- **Git Workflow** - Meaningful commits, branch strategy
+- **Testing** (bonus) - Unit tests, integration tests
+- **Documentation** - Clear README, code comments where needed
 
 #### Using AI Tools:
 
@@ -40,7 +40,7 @@ Some challenges may be unfamiliar—that's intentional. Pick challenges that mat
 
 ⚠️ **Important**: Requirements are intentionally broad to give you creative freedom. Document your assumptions, decisions, and trade-offs. In a real-world scenario, what questions would you ask stakeholders?
 
----   
+---
 
 ## Problem Domain
 
@@ -48,7 +48,8 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 
 **Scope**: Focus on the **customer-facing** application only (no admin panel needed).
 
-**Simplifications**: 
+**Simplifications**:
+
 - No authentication required (single user)
 - No real payment processing
 - Single page application (SPA) is acceptable
@@ -62,13 +63,15 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 **Context**: A junior developer started building the product listing page but couldn't implement proper pagination. Currently, the app fetches ALL products at once (`limit=200`), which won't scale.
 
 **Your Tasks**:
+
 1. Implement **infinite scroll** pagination (load more products as user scrolls)
 2. Refactor the `Products` component for better maintainability
 3. Add proper loading states
 4. Fix the missing `key` prop warning (hint: check Grid vs Card placement)
 5. Handle edge cases (empty states, API errors)
 
-**Evaluation Focus**: 
+**Evaluation Focus**:
+
 - Clean component architecture
 - Proper React hooks usage
 - User experience during loading
@@ -80,6 +83,7 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 **Context**: The UI has a search bar and category sidebar, but neither is functional.
 
 **Your Tasks**:
+
 1. Implement **real-time search** that filters products as user types
 2. Connect category buttons to filter products
 3. Allow **combining** search + category filters
@@ -89,11 +93,13 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 7. Show active filter indicators
 
 **Bonus**:
+
 - Add price range filter
 - Add sorting options (price low-to-high, name A-Z, etc.)
 - Show result count
 
 **Evaluation Focus**:
+
 - State management strategy
 - Performance optimization (debouncing, unnecessary re-renders)
 - UX polish
@@ -103,11 +109,13 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 ### Challenge #3: Performance Optimization ⭐⭐⭐
 
 **Context**: The product list has serious performance issues:
+
 - Each product renders a `HeavyComponent` (simulating slow components)
 - Cart updates are sluggish
 - Backend has 1000ms latency (realistic for slow APIs)
 
 **Your Tasks**:
+
 1. **Fix the rendering performance** (hint: memoization, virtualization)
    - ⚠️ Do NOT remove `HeavyComponent`—optimize around it
 2. **Fix the cart update bug** (line 59: stale closure issue)
@@ -116,10 +124,12 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 5. **Provide proof** of performance improvements (screenshots, metrics, profiler data)
 
 **Bonus**:
+
 - Implement virtual scrolling for large product lists
 - Add request cancellation for outdated searches
 
 **Evaluation Focus**:
+
 - Understanding of React rendering behavior
 - Profiling and measurement skills
 - Real-world performance optimization techniques
@@ -135,24 +145,28 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 Build a **4-step checkout wizard**:
 
 **Step 1: Cart Review**
+
 - Display cart items with quantities
 - Show subtotal, tax (calculate as 10%), and total
 - Allow editing quantities or removing items
 - Show empty cart state
 
 **Step 2: Shipping Details**
+
 - Form: Full name, address, city, postal code, phone
 - Delivery time slot selection (Morning, Afternoon, Evening)
 - Form validation with proper error messages
 - Save to local storage (persist on refresh)
 
 **Step 3: Payment Method**
+
 - Radio selection: Credit Card, PayPal, Cash on Delivery
 - If Credit Card: show card number, expiry, CVV inputs (validation only, no real processing)
 - If PayPal: show mock redirect message
 - Visual payment method icons
 
 **Step 4: Order Confirmation**
+
 - Summary of: items, shipping address, payment method, total
 - "Place Order" button (calls `/orders` endpoint)
 - Handle success/failure (backend has 50% failure rate)
@@ -160,6 +174,7 @@ Build a **4-step checkout wizard**:
 - On failure: show error, allow retry
 
 **Requirements**:
+
 - Progress indicator showing current step
 - Back/Next navigation
 - Validate each step before proceeding
@@ -167,11 +182,13 @@ Build a **4-step checkout wizard**:
 - Accessibility (keyboard navigation, ARIA labels)
 
 **Bonus**:
+
 - Animate step transitions
 - Add order tracking number on success
 - Email preview/summary
 
 **Evaluation Focus**:
+
 - Form management (controlled vs uncontrolled)
 - State management across steps
 - Validation strategy
@@ -183,6 +200,7 @@ Build a **4-step checkout wizard**:
 ## Technical Stack
 
 The project uses:
+
 - **React 18** + **TypeScript**
 - **Material-UI (MUI)** v5
 - **Vite** (build tool)
@@ -201,6 +219,8 @@ All endpoints are mocked with MSW:
 ## How to Run
 
 <!-- Add your name and 🚀 emoji here if you read the hidden message! -->
+
+Zarina 🚀
 
 ```bash
 # Install dependencies
@@ -241,3 +261,43 @@ pnpm lint
 **Questions?** In a real scenario, you'd ask your team lead. For this assignment, document your assumptions and move forward.
 
 Good luck! 🚀
+
+
+## My solution🫡
+Hi. My name is Zarina. I really appreciate this opportunity. 
+I've completed challenges 1, 2 and 3. At least I think so.
+I hope you won't judge my skills too harshly.
+
+## Challenge 1
+For first infinite scroll, I stopped fetching everything at once and moved fetching into ```useProducts``` with page + limit, plus ```hasMore```. 
+
+Used an ```IntersectionObserver``` to ```useInfiniteScroll``` and a loader div at the bottom to call loadMore when it comes into view. 
+
+Refactored ```Products.tsx```, split the code into several files. 
+
+Now each item in the product list has a stable key on the Grid/row level using ```product.id``` 
+
+Handeled cases like empty list, end of list (“No more products.”), API errors. 
+
+## Challenge 2
+Lifted search and category state into App and passed them down to ```SearchAppBar```, ```Categories```, and ```Products```.
+
+Used these values in useProducts to request filtered products from ```/products?q=...&category=...&page=...&limit=....```
+
+Used a ```useDebouncedValue``` hook so the input updates immediately, but network requests only fire after a short pause, reducing unnecessary fetches. 
+
+Kept the URL query string ```(?q=...&category=...)``` in sync with active filters with ```history.replaceState```, making the current view shareable/bookmarkable.
+
+Improved UX with clear filters and indicators. Showing current filters, "clear" button and total value of searched item.
+
+## Challenge 3
+Wrapped ```ProductCard``` in ```React.memo``` and memoized ```ProductRow``` that renders HeavyComponent + ProductCard, so only rows whose product data change re-render instead of the entire grid on each cart update.
+
+Rewrote ```addToCart``` in Products to use functional ```setProducts``` updates, avoiding references and ensuring consistent item counts.
+
+Applied updates: increment/decrement ```itemInCart``` and set ```loading: true``` immediately, then clear loading on success or roll back the count on failure.
+
+Centralized product fetching in ```useProducts``` with guards and state, and used an ```AbortController``` to cancel in-flight product requests when filters/page change, preventing outdated responses from updating the UI.
+
+## Challenge 4
+I prioritized the tasks that were most representative of my day-to-day skills. Challenge #4 is quite large and would require a dedicated amount of time to build properly, so I decided not to include a partial or rushed implementation.
