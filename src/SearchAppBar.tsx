@@ -70,6 +70,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function SearchAppBar({ quantity, price }: { quantity: number, price: number }) {
   const { filters, updateFilters, clearFilters } = useProductFilters();
   
+  console.log('[SearchAppBar] Received props - quantity:', quantity, 'price:', price);
+  
   // Локальное состояние для контролируемого input (обновляется моментально)
   const [searchInput, setSearchInput] = useState(filters.q);
   

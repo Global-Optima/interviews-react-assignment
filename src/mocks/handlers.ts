@@ -105,11 +105,16 @@ function computeCart() {
     .map(([productId, quantity]) => {
       const product = products.find((p) => p.id === parseInt(productId, 10))!;
       return {
-        product,
+        id: product.id,
         quantity,
       };
     });
-  const totalPrice = detailedCart.reduce((acc, { product, quantity }) => acc + product.price * quantity, 0);
+  const totalPrice = Object.entries(cart)
+    .filter(([_, quantity]) => quantity > 0)
+    .reduce((acc, [productId, quantity]) => {
+      const product = products.find((p) => p.id === parseInt(productId, 10))!;
+      return acc + product.price * quantity;
+    }, 0);
   const totalItems = detailedCart.reduce((acc, { quantity }) => acc + quantity, 0);
   return HttpResponse.json({
     items: detailedCart,

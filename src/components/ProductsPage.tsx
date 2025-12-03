@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, CircularProgress, Alert, Typography } from '@mui/material';
+import { Box, CircularProgress, Alert, Typography, Container, Button } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import { useProductFilters } from '../hooks/useProductFilters';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useInfiniteProducts } from '../hooks/useInfiniteProducts';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
-import { useCart } from '../hooks/useCart';
+import { useCartContext } from '../contexts/CartContext';
 import { ProductFilters } from './ProductFilters';
 import { VirtualizedProductGrid } from './VirtualizedProductGrid';
 
 export function ProductsPage() {
-  // Управление корзиной через dedicated hook с оптимистичными обновлениями
-  const { updateCartItem, getItemQuantity } = useCart();
+  // Управление корзиной через CartContext с оптимистичными обновлениями
+  const { updateCartItem, getItemQuantity } = useCartContext();
   // Управление фильтрами через URL
   const { filters, updateFilters, clearFilters } = useProductFilters();
 
@@ -94,126 +96,312 @@ export function ProductsPage() {
         height: '100%',
         overflowY: 'auto',
         overflowX: 'hidden',
-        p: 3,
-        background: 'transparent',
+        backgroundColor: 'background.default',
       }}
     >
-      {/* Фильтры */}
-      <ProductFilters
-        filters={filters}
-        onChangeFilters={updateFilters}
-        onClearFilters={() => {
-          clearFilters();
-          setSearchInput('');
+      <Container 
+        maxWidth="lg"
+        sx={{ 
+          py: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 2, sm: 3 },
         }}
-        searchInput={searchInput}
-        onSearchInputChange={setSearchInput}
-        resultsCount={totalCount}
-      />
-
-      {/* Ошибка API */}
-      {error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 2 }} 
-          onClose={() => {}}
-        >
-          {error}
-        </Alert>
-      )}
-
-      {/* Пустое состояние */}
-      {!isLoading && products.length === 0 && !error && (
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="400px"
-          gap={2}
-          sx={{
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            p: 4,
+      >
+        {/* Page Header - Title & Subtitle */}
+        <Box 
+          sx={{ 
+            mb: { xs: 3, md: 4 },
+            textAlign: { xs: 'center', md: 'left' },
           }}
         >
-          <Typography 
-            variant="h5" 
-            color="text.primary"
-            fontWeight={600}
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              gap: 1.5,
+              mb: 1,
+            }}
           >
-            No products found
-          </Typography>
-          {(filters.q || filters.category || filters.minPrice || filters.maxPrice) && (
-            <Typography variant="body1" color="text.secondary" textAlign="center">
-              Try adjusting your search or filters to find what you're looking for
+            <StorefrontIcon 
+              sx={{ 
+                fontSize: { xs: 32, md: 40 }, 
+                color: 'primary.main' 
+              }} 
+            />
+            <Typography 
+              variant="h3" 
+              component="h1"
+              sx={{
+                fontWeight: 700,
+                color: 'text.primary',
+                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+                letterSpacing: '-0.02em',
+              }}
+            >
+              TechHub Store
             </Typography>
-          )}
-        </Box>
-      )}
-
-      {/* Виртуализированная сетка товаров */}
-      {products.length > 0 && (
-        <Box
-          sx={{
-            height: 'calc(100vh - 350px)', // Adjust based on filters height
-            minHeight: '500px',
-            mb: 2,
-          }}
-        >
-          <VirtualizedProductGrid
-            products={products}
-            onAddToCart={handleAddToCart}
-            onLoadMore={loadMore}
-            hasMore={hasMore}
-            isLoading={isLoading}
-          />
-        </Box>
-      )}
-
-      {/* Индикатор загрузки при первоначальной загрузке */}
-      {isLoading && products.length === 0 && (
-        <Box 
-          display="flex" 
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          p={6} 
-          gap={2}
-          sx={{
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <CircularProgress size={40} thickness={4} />
-          <Typography variant="body1" color="text.secondary" fontWeight={500}>
-            Loading products...
+          </Box>
+          <Typography 
+            variant="subtitle1" 
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: '0.875rem', md: '1rem' },
+              maxWidth: { xs: '100%', md: 600 },
+              mx: { xs: 'auto', md: 0 },
+            }}
+          >
+            Discover the latest electronics and gadgets. Shop laptops, smartphones, accessories and more.
           </Typography>
         </Box>
-      )}
 
-      {/* Сообщение об окончании списка */}
-      {!hasMore && products.length > 0 && (
-        <Box 
-          display="flex" 
-          justifyContent="center" 
-          p={2}
-          sx={{
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
+        {/* Filters Panel */}
+        <ProductFilters
+          filters={filters}
+          onChangeFilters={updateFilters}
+          onClearFilters={() => {
+            clearFilters();
+            setSearchInput('');
           }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            All products loaded • {totalCount} total
-          </Typography>
-        </Box>
-      )}
+          searchInput={searchInput}
+          onSearchInputChange={setSearchInput}
+          resultsCount={totalCount}
+        />
+
+        {/* API Error with Retry */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            action={
+              <Button 
+                color="inherit" 
+                size="small"
+                startIcon={<RefreshIcon />}
+                onClick={() => loadMore()}
+              >
+                Retry
+              </Button>
+            }
+          >
+            <Typography variant="body2" fontWeight={600}>
+              Failed to load products
+            </Typography>
+            <Typography variant="caption">
+              {error}
+            </Typography>
+          </Alert>
+        )}
+
+        {/* First-time Loading State */}
+        {isLoading && products.length === 0 && !error && (
+          <Box 
+            display="flex" 
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              minHeight: { xs: 300, md: 400 },
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              p: { xs: 4, md: 6 },
+            }}
+          >
+            <CircularProgress size={48} thickness={4} sx={{ mb: 3 }} />
+            <Typography 
+              variant="h6" 
+              color="text.secondary" 
+              fontWeight={500}
+              textAlign="center"
+            >
+              Loading products...
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              textAlign="center"
+              sx={{ mt: 1 }}
+            >
+              Please wait while we fetch the latest tech
+            </Typography>
+          </Box>
+        )}
+
+        {/* Empty State - No Products Found */}
+        {!isLoading && products.length === 0 && !error && (
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            sx={{
+              minHeight: { xs: 300, md: 400 },
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              p: { xs: 3, md: 5 },
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: { xs: 80, md: 100 },
+                height: { xs: 80, md: 100 },
+                borderRadius: '50%',
+                backgroundColor: 'primary.light',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+              }}
+            >
+              <StorefrontIcon 
+                sx={{ 
+                  fontSize: { xs: 40, md: 50 }, 
+                  color: 'primary.main' 
+                }} 
+              />
+            </Box>
+            <Typography 
+              variant="h5" 
+              color="text.primary"
+              fontWeight={600}
+              gutterBottom
+              sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' } }}
+            >
+              No products found
+            </Typography>
+            {(filters.q || filters.category || filters.minPrice || filters.maxPrice) ? (
+              <>
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary"
+                  sx={{ mb: 3, maxWidth: 400 }}
+                >
+                  We couldn't find any products matching your search criteria. Try adjusting your filters.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    clearFilters();
+                    setSearchInput('');
+                  }}
+                  startIcon={<RefreshIcon />}
+                >
+                  Clear All Filters
+                </Button>
+              </>
+            ) : (
+              <Typography 
+                variant="body1" 
+                color="text.secondary"
+                sx={{ maxWidth: 400 }}
+              >
+                No products available at the moment. Please check back later.
+              </Typography>
+            )}
+          </Box>
+        )}
+
+        {/* Products Grid */}
+        {products.length > 0 && (
+          <>
+            {/* Results Count Header */}
+            <Box 
+              sx={{ 
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 1,
+              }}
+            >
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                fontWeight={500}
+              >
+                Showing <strong>{products.length}</strong> of <strong>{totalCount}</strong> products
+              </Typography>
+              {isLoading && (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CircularProgress size={16} thickness={4} />
+                  <Typography variant="caption" color="text.secondary">
+                    Loading more...
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
+            {/* Virtualized Grid */}
+            <Box
+              sx={{
+                height: 'calc(100vh - 450px)',
+                minHeight: { xs: 400, md: 500 },
+                mb: 2,
+              }}
+            >
+              <VirtualizedProductGrid
+                products={products}
+                onAddToCart={handleAddToCart}
+                onLoadMore={loadMore}
+                hasMore={hasMore}
+                isLoading={isLoading}
+              />
+            </Box>
+
+            {/* Loading More Indicator */}
+            {isLoading && products.length > 0 && (
+              <Box 
+                display="flex" 
+                justifyContent="center"
+                alignItems="center"
+                gap={2}
+                sx={{
+                  py: 3,
+                  backgroundColor: 'background.paper',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  mb: 2,
+                }}
+              >
+                <CircularProgress size={24} thickness={4} />
+                <Typography variant="body2" color="text.secondary">
+                  Loading more products...
+                </Typography>
+              </Box>
+            )}
+
+            {/* End of List Message */}
+            {!hasMore && !isLoading && (
+              <Box 
+                display="flex" 
+                justifyContent="center"
+                alignItems="center"
+                sx={{
+                  py: 2,
+                  backgroundColor: 'background.paper',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  ✨ You've seen all {totalCount} products
+                </Typography>
+              </Box>
+            )}
+          </>
+        )}
+
+        {/* Sentinel for Infinite Scroll */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
+      </Container>
     </Box>
   );
 }

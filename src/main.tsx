@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { CartProvider } from './contexts/CartContext.tsx';
 import App from './App.tsx';
 import { enableMockServiceWorker } from './mocks/browser.ts';
 
@@ -156,7 +157,9 @@ async function startApp() {
         <BrowserRouter>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <App/>
+            <CartProvider>
+              <App/>
+            </CartProvider>
           </ThemeProvider>
         </BrowserRouter>
       </React.StrictMode>,
@@ -169,7 +172,9 @@ async function startApp() {
         <BrowserRouter>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <App/>
+            <CartProvider>
+              <App/>
+            </CartProvider>
           </ThemeProvider>
         </BrowserRouter>
       </React.StrictMode>,

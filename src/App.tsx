@@ -2,10 +2,12 @@ import { Products } from './Products.tsx';
 import { Box, Container, Stack } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
-import { useCart } from './hooks/useCart.ts';
+import { useCartContext } from './contexts/CartContext.tsx';
 
 function App() {
-  const { cart } = useCart();
+  const { cart } = useCartContext();
+
+  console.log('[App] Cart state:', cart);
 
   return (
     <Box

@@ -17,7 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
 import { useProductFilters } from './hooks/useProductFilters.ts';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver.ts';
-import { useCart } from './hooks/useCart.ts';
+import { useCartContext } from './contexts/CartContext.tsx';
 
 export type Product = {
   id: number;
@@ -33,7 +33,7 @@ const PRODUCTS_PER_PAGE = 20;
 
 export const Products = () => {
   const { filters } = useProductFilters();
-  const { updateCartItem, getItemQuantity } = useCart();
+  const { updateCartItem, getItemQuantity } = useCartContext();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState(0);

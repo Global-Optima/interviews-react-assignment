@@ -9,7 +9,6 @@ import {
   TextField,
   Typography,
   Paper,
-  Divider,
   InputAdornment,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -90,104 +89,67 @@ export function ProductFilters({
 
   return (
     <Paper 
-      elevation={1} 
+      elevation={0}
       sx={{ 
-        p: { xs: 2, sm: 3 }, 
+        p: { xs: 2, sm: 2.5 }, 
         mb: 3,
         backgroundColor: 'background.paper',
         border: '1px solid',
         borderColor: 'divider',
+        borderRadius: 2,
       }}
     >
-      <Stack spacing={3}>
-        {/* Header с результатами и кнопкой очистки */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-          <Box>
-            <Typography 
-              variant="h5" 
-              component="div"
-              color="primary.main"
-              sx={{ fontWeight: 700, mb: 0.5 }}
-            >
-              Filters
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              <strong>{resultsCount}</strong> {resultsCount === 1 ? 'product' : 'products'} found
-            </Typography>
-          </Box>
-          {hasActiveFilters && (
-            <Button
+      <Stack spacing={2}>
+        {/* Main filters row - responsive layout */}
+        <Stack 
+          direction={{ xs: 'column', md: 'row' }} 
+          spacing={2}
+          alignItems={{ xs: 'stretch', md: 'flex-start' }}
+        >
+          {/* Search field - takes more space on desktop */}
+          <Box sx={{ flex: { xs: 1, md: 2 } }}>
+            <TextField
+              fullWidth
               size="small"
-              variant="contained"
-              color="primary"
-              startIcon={<ClearIcon />}
-              onClick={onClearFilters}
-            >
-              Clear Filters
-            </Button>
-          )}
-        </Box>
+              placeholder="Search products..."
+              value={searchInput}
+              onChange={(e) => onSearchInputChange(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: 'text.secondary' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchInput && (
+                  <InputAdornment position="end">
+                    <Button
+                      size="small"
+                      onClick={() => onSearchInputChange('')}
+                      sx={{ minWidth: 'auto', p: 0.5 }}
+                      aria-label="Clear search"
+                    >
+                      <ClearIcon fontSize="small" />
+                    </Button>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'grey.50',
+                },
+              }}
+            />
+          </Box>
 
-        <Divider />
-
-        {/* Поле поиска */}
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Search products..."
-          value={searchInput}
-          onChange={(e) => onSearchInputChange(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            endAdornment: searchInput && (
-              <InputAdornment position="end">
-                <Button
-                  size="small"
-                  onClick={() => onSearchInputChange('')}
-                  sx={{ minWidth: 'auto', p: 0.5 }}
-                >
-                  <ClearIcon fontSize="small" />
-                </Button>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* Категории */}
-        <Box>
-          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
-            Category
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {CATEGORIES.map((category) => (
-              <Chip
-                key={category.value}
-                label={category.label}
-                onClick={() => onChangeFilters({ category: category.value || undefined })}
-                color={filters.category === category.value ? 'primary' : 'default'}
-                variant={filters.category === category.value ? 'filled' : 'outlined'}
-                sx={{ 
-                  mb: 1,
-                  fontWeight: filters.category === category.value ? 600 : 400,
-                }}
-              />
-            ))}
-          </Stack>
-        </Box>
-
-        {/* Сортировка */}
-        <Box>
-          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
-            Sort By
-          </Typography>
-          <FormControl size="small" fullWidth>
+          {/* Sort selector */}
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', md: 200 } }}>
             <Select
               value={filters.sort}
               onChange={(e) => onChangeFilters({ sort: e.target.value as SortOption })}
+              displayEmpty
+              sx={{
+                backgroundColor: 'grey.50',
+              }}
             >
               {SORT_OPTIONS.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -196,14 +158,14 @@ export function ProductFilters({
               ))}
             </Select>
           </FormControl>
-        </Box>
 
-        {/* Диапазон цен */}
-        <Box>
-          <Typography variant="subtitle1" gutterBottom fontWeight={600} color="text.primary">
-            Price Range
-          </Typography>
-          <Stack direction="row" spacing={2} alignItems="center">
+          {/* Price range inputs */}
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            alignItems="center"
+            sx={{ minWidth: { xs: '100%', md: 240 } }}
+          >
             <TextField
               size="small"
               type="number"
@@ -213,10 +175,15 @@ export function ProductFilters({
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              inputProps={{ min: 0, step: 10 }}
-              sx={{ flex: 1 }}
+              inputProps={{ min: 0, step: 10, 'aria-label': 'Minimum price' }}
+              sx={{ 
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'grey.50',
+                },
+              }}
             />
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
               –
             </Typography>
             <TextField
@@ -228,69 +195,135 @@ export function ProductFilters({
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
-              inputProps={{ min: 0, step: 10 }}
-              sx={{ flex: 1 }}
+              inputProps={{ min: 0, step: 10, 'aria-label': 'Maximum price' }}
+              sx={{ 
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'grey.50',
+                },
+              }}
             />
           </Stack>
-        </Box>
 
-        {/* Индикаторы активных фильтров */}
+          {/* Clear filters button */}
+          {hasActiveFilters && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              startIcon={<ClearIcon />}
+              onClick={onClearFilters}
+              sx={{ 
+                minWidth: { xs: '100%', md: 'auto' },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Clear
+            </Button>
+          )}
+        </Stack>
+
+        {/* Category chips - second row */}
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          {CATEGORIES.map((category) => (
+            <Chip
+              key={category.value}
+              label={category.label}
+              onClick={() => onChangeFilters({ category: category.value || undefined })}
+              color={filters.category === category.value ? 'primary' : 'default'}
+              variant={filters.category === category.value ? 'filled' : 'outlined'}
+              size="small"
+              sx={{ 
+                fontWeight: filters.category === category.value ? 600 : 400,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                },
+              }}
+            />
+          ))}
+        </Stack>
+
+        {/* Active filters indicators - compact chips below */}
         {hasActiveFilters && (
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Active Filters
-            </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Box 
+            sx={{ 
+              pt: 1,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap alignItems="center">
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ mr: 0.5, fontWeight: 600 }}
+              >
+                Active:
+              </Typography>
               {filters.q && (
                 <Chip
-                  label={`Search: "${filters.q}"`}
+                  label={`"${filters.q}"`}
                   size="small"
                   onDelete={() => {
                     onSearchInputChange('');
                     onChangeFilters({ q: undefined });
                   }}
-                  color="primary"
-                  variant="outlined"
+                  sx={{ 
+                    height: 24,
+                    fontSize: '0.75rem',
+                  }}
                 />
               )}
               {filters.category && (
                 <Chip
-                  label={`Category: ${filters.category}`}
+                  label={filters.category}
                   size="small"
                   onDelete={() => onChangeFilters({ category: undefined })}
-                  color="primary"
-                  variant="outlined"
+                  sx={{ 
+                    height: 24,
+                    fontSize: '0.75rem',
+                  }}
                 />
               )}
               {filters.sort && filters.sort !== 'price_asc' && (
                 <Chip
-                  label={`Sort: ${SORT_OPTIONS.find((o) => o.value === filters.sort)?.label}`}
+                  label={SORT_OPTIONS.find((o) => o.value === filters.sort)?.label.split(':')[0]}
                   size="small"
                   onDelete={() => onChangeFilters({ sort: 'price_asc' })}
-                  color="primary"
-                  variant="outlined"
+                  sx={{ 
+                    height: 24,
+                    fontSize: '0.75rem',
+                  }}
                 />
               )}
-              {filters.minPrice !== undefined && (
+              {(filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
                 <Chip
-                  label={`Min: $${filters.minPrice}`}
+                  label={`$${filters.minPrice ?? '0'} – $${filters.maxPrice ?? '∞'}`}
                   size="small"
-                  onDelete={() => onChangeFilters({ minPrice: undefined })}
-                  color="primary"
-                  variant="outlined"
+                  onDelete={() => onChangeFilters({ minPrice: undefined, maxPrice: undefined })}
+                  sx={{ 
+                    height: 24,
+                    fontSize: '0.75rem',
+                  }}
                 />
               )}
-              {filters.maxPrice !== undefined && (
-                <Chip
-                  label={`Max: $${filters.maxPrice}`}
-                  size="small"
-                  onDelete={() => onChangeFilters({ maxPrice: undefined })}
-                  color="primary"
-                  variant="outlined"
-                />
-              )}
+              <Typography 
+                variant="caption" 
+                color="text.secondary" 
+                sx={{ ml: 1 }}
+              >
+                ({resultsCount} {resultsCount === 1 ? 'result' : 'results'})
+              </Typography>
             </Stack>
           </Box>
+        )}
+
+        {/* Results count when no active filters */}
+        {!hasActiveFilters && (
+          <Typography variant="caption" color="text.secondary">
+            Showing all <strong>{resultsCount}</strong> products
+          </Typography>
         )}
       </Stack>
     </Paper>

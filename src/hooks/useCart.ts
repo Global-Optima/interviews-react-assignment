@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface CartItem {
   id: number;
@@ -32,15 +32,23 @@ const EMPTY_CART: Cart = {
  * - Automatic rollback on API failure
  * - Functional state updates to prevent stale closures
  * - isUpdating flag for UI feedback
+ * - useRef to avoid stale closure in getItemQuantity
  */
 export function useCart(): UseCartReturn {
   const [cart, setCart] = useState<Cart>(EMPTY_CART);
   const [isUpdating, setIsUpdating] = useState(false);
+  const cartRef = useRef<Cart>(cart);
+
+  // Синхронизируем ref с актуальным состоянием
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
 
   const getItemQuantity = useCallback((productId: number): number => {
-    const item = cart.items.find(i => i.id === productId);
+    // Используем ref для доступа к актуальному состоянию корзины
+    const item = cartRef.current.items.find(i => i.id === productId);
     return item?.quantity || 0;
-  }, [cart.items]);
+  }, []);
 
   const updateCartItem = useCallback(async (productId: number, quantity: number): Promise<boolean> => {
     // Store previous cart state for rollback
@@ -95,6 +103,8 @@ export function useCart(): UseCartReturn {
       }
 
       const serverCart: Cart = await response.json();
+
+      console.log('[useCart] Server response:', serverCart);
 
       // Update with accurate server data using functional update
       setCart(() => serverCart);

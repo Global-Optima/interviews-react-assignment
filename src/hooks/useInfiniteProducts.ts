@@ -56,7 +56,7 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
 
     try {
       const params = new URLSearchParams();
-      params.set('page', (page + 1).toString());
+      params.set('page', page.toString());
       params.set('limit', PRODUCTS_PER_PAGE.toString());
 
       if (q) params.set('q', q);
@@ -79,7 +79,11 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
 
       // Проверяем, что запрос не был отменен перед обновлением состояния
       if (!abortController.signal.aborted) {
-        setProducts((prev) => [...prev, ...data.products]);
+        setProducts((prev) => {
+          // Если это первая страница (page === 0), заменяем все товары
+          // Иначе добавляем к существующим
+          return page === 0 ? data.products : [...prev, ...data.products];
+        });
         setTotalCount(data.total);
         setPage((prev) => prev + 1);
         setHasMore(data.hasMore);
@@ -102,75 +106,21 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
     }
   }, [page, hasMore, isLoading, q, category]);
 
-  // Функция для начальной загрузки (перезагрузка при изменении фильтров)
-  const loadInitial = useCallback(async () => {
+  // Перезагрузка при изменении фильтров
+  useEffect(() => {
     // Отменяем все предыдущие запросы при изменении фильтров
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // Создаем новый AbortController для начальной загрузки
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
-
-    setIsLoading(true);
-    setError(null);
-    loadingRef.current = true;
-
-    try {
-      const params = new URLSearchParams();
-      params.set('page', '0');
-      params.set('limit', PRODUCTS_PER_PAGE.toString());
-
-      if (q) params.set('q', q);
-      if (category) params.set('category', category);
-
-      const response = await fetch(`/products?${params.toString()}`, {
-        signal: abortController.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load products: ${response.status}`);
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response type');
-      }
-
-      const data = await response.json();
-
-      // Проверяем, что запрос не был отменен перед обновлением состояния
-      if (!abortController.signal.aborted) {
-        setProducts(data.products);
-        setTotalCount(data.total);
-        setPage(0);
-        setHasMore(data.hasMore);
-      }
-    } catch (err) {
-      // Игнорируем ошибки отмены запроса - они не являются реальными ошибками
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log('[useInfiniteProducts] Initial load aborted (expected - filters changed)');
-        return;
-      }
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-      loadingRef.current = false;
-      
-      // Очищаем ссылку если это был текущий контроллер
-      if (abortControllerRef.current === abortController) {
-        abortControllerRef.current = null;
-      }
-    }
-  }, [q, category]);
-
-  // Перезагрузка при изменении фильтров
-  useEffect(() => {
     setProducts([]);
     setPage(0);
     setHasMore(true);
-    loadInitial();
+    setError(null);
+    loadingRef.current = false;
+    
+    // Загружаем первую страницу
+    loadMore();
     
     // Cleanup: отменяем запросы при размонтировании компонента
     return () => {
@@ -178,7 +128,8 @@ export function useInfiniteProducts(options: UseInfiniteProductsOptions) {
         abortControllerRef.current.abort();
       }
     };
-  }, [loadInitial]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, category]);
 
   // Применяем сортировку на клиенте
   const sortedProducts = products.slice();
