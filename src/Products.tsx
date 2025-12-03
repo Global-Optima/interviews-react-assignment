@@ -194,7 +194,8 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
   });
 
   // Исправлена функция addToCart - используется функциональное обновление состояния
-  function addToCart(productId: number, quantity: number) {
+  // Обернуто в useCallback для стабильности ссылки и предотвращения ненужных ререндеров
+  const addToCart = useCallback((productId: number, quantity: number) => {
     setProducts(prev => prev.map(product => {
       if (product.id === productId) {
         return {
@@ -249,7 +250,7 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
         return product;
       }));
     });
-  }
+  }, [onCartChange]);
 
   return (
     <Box 

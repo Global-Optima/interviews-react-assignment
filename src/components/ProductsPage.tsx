@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Grid, CircularProgress, Alert, Typography } from '@mui/material';
 import { useProductFilters } from '../hooks/useProductFilters';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
@@ -63,10 +63,11 @@ export function ProductsPage({ onCartChange }: ProductsPageProps) {
   });
 
   // Обработчик добавления товара в корзину
-  const handleAddToCart = async (productId: number, quantity: number) => {
+  // Обернуто в useCallback для стабильности ссылки и оптимизации рендеринга
+  const handleAddToCart = useCallback(async (productId: number, quantity: number) => {
     // Обновляем UI оптимистично
-    setProducts(
-      products.map((p) => (p.id === productId ? { ...p, loading: true } : p))
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, loading: true } : p))
     );
 
     try {
@@ -80,8 +81,8 @@ export function ProductsPage({ onCartChange }: ProductsPageProps) {
         const cart = await response.json();
         
         // Обновляем количество в корзине для товара
-        setProducts(
-          products.map((p) =>
+        setProducts((prev) =>
+          prev.map((p) =>
             p.id === productId
               ? { ...p, itemInCart: (p.itemInCart || 0) + quantity, loading: false }
               : p
@@ -95,11 +96,11 @@ export function ProductsPage({ onCartChange }: ProductsPageProps) {
     } catch (err) {
       console.error('Cart update error:', err);
       // Откатываем loading состояние
-      setProducts(
-        products.map((p) => (p.id === productId ? { ...p, loading: false } : p))
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, loading: false } : p))
       );
     }
-  };
+  }, [onCartChange, setProducts]);
 
   return (
     <Box

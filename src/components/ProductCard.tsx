@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Card,
   CardActions,
@@ -18,7 +19,7 @@ interface ProductCardProps {
   onAddToCart: (productId: number, quantity: number) => void;
 }
 
-export function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export const ProductCard = React.memo(function ProductCard({ product, onAddToCart }: ProductCardProps) {
   return (
     <>
       {/* Do not remove this - performance challenge component */}
@@ -164,4 +165,4 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       </Card>
     </>
   );
-}
+});
