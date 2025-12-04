@@ -11,7 +11,7 @@ export const Categories = () => {
         {categories.map((text) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
-              <ListItemText primary={text}/>
+              <ListItemText primary={text} />
             </ListItemButton>
           </ListItem>
         ))}

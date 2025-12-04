@@ -66,7 +66,7 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
           </Typography>
           <Search>
             <SearchIconWrapper>
-              <SearchIcon/>
+              <SearchIcon />
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search…"
@@ -82,7 +82,7 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
             </Typography>
           </Box>
           <Badge badgeContent={quantity || 0} color="secondary">
-            <ShoppingCartIcon/>
+            <ShoppingCartIcon />
           </Badge>
         </Toolbar>
       </AppBar>

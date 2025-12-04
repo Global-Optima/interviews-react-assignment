@@ -14,21 +14,8 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
 
-export type Product = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
-  category: string;
-  itemInCart: number;
-  loading: boolean;
-};
+import { Cart, Product } from './types';
 
-export type Cart = {
-  items: Product[];
-  totalPrice: number;
-  totalItems: number;
-}
 export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void }) => {
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -78,7 +65,7 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
         {products.map(product => (
           <Grid item xs={4}>
             {/* Do not remove this */}
-            <HeavyComponent/>
+            <HeavyComponent />
             <Card key={product.id} style={{ width: '100%' }}>
               <CardMedia
                 component="img"
@@ -97,14 +84,14 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
                 <Typography variant="h6" component="div">
                   ${product.price}
                 </Typography>
-                <Box flexGrow={1}/>
+                <Box flexGrow={1} />
                 <Box position="relative" display="flex" flexDirection="row" alignItems="center">
                   <Box position="absolute" left={0} right={0} top={0} bottom={0} textAlign="center">
-                    {product.loading && <CircularProgress size={20}/>}
+                    {product.loading && <CircularProgress size={20} />}
                   </Box>
                   <IconButton disabled={product.loading} aria-label="delete" size="small"
-                              onClick={() => addToCart(product.id, -1)}>
-                    <RemoveIcon fontSize="small"/>
+                    onClick={() => addToCart(product.id, -1)}>
+                    <RemoveIcon fontSize="small" />
                   </IconButton>
 
                   <Typography variant="body1" component="div" mx={1}>
@@ -112,8 +99,8 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
                   </Typography>
 
                   <IconButton disabled={product.loading} aria-label="add" size="small"
-                              onClick={() => addToCart(product.id, 1)}>
-                    <AddIcon fontSize="small"/>
+                    onClick={() => addToCart(product.id, 1)}>
+                    <AddIcon fontSize="small" />
                   </IconButton>
                 </Box>
 

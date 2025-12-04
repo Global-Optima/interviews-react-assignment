@@ -1,4 +1,5 @@
-import { Cart, Products } from './Products.tsx';
+import { Products } from './Products.tsx';
+import { Cart } from './types.ts';
 import { Box, CssBaseline } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
@@ -15,12 +16,12 @@ function App() {
 
   return (
     <Box height="100vh" display="flex" flexDirection="column">
-      <CssBaseline/>
-      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
+      <CssBaseline />
+      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0} />
       <Box flex={1} display="flex" flexDirection="row">
-        <Categories/>
+        <Categories />
         <Box flex={1}>
-          <Products onCartChange={onCartChange}/>
+          <Products onCartChange={onCartChange} />
         </Box>
       </Box>
 

@@ -7,7 +7,7 @@ import { enableMockServiceWorker } from './mocks/browser.ts';
 enableMockServiceWorker().then(() => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      <App/>
+      <App />
     </React.StrictMode>,
   );
 });
