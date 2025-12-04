@@ -1,31 +1,43 @@
-import { Cart, Products } from './Products.tsx';
-import { Box, CssBaseline } from '@mui/material';
-import SearchAppBar from './SearchAppBar.tsx';
-import { Categories } from './Categories.tsx';
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ThemeProvider as MuiThemeProvider, CssBaseline } from '@mui/material'
+import { CartProvider } from '@/context/CartContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { useTheme } from '@/context/ThemeContext'
+import { getTheme } from '@/theme'
+import { Header } from '@/components/Header'
+import { ProductsPage } from '@/pages/ProductsPage'
+import { CartPage } from '@/pages/CartPage'
+import { CheckoutPage } from '@/pages/CheckoutPage'
 
-function App() {
-
-  const [cart, setCart] = useState<Cart>();
-
-
-  function onCartChange(cart: Cart) {
-    setCart(cart);
-  }
+function ThemedApp() {
+  const { mode } = useTheme()
+  const theme = getTheme(mode)
 
   return (
-    <Box height="100vh" display="flex" flexDirection="column">
-      <CssBaseline/>
-      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-      <Box flex={1} display="flex" flexDirection="row">
-        <Categories/>
-        <Box flex={1}>
-          <Products onCartChange={onCartChange}/>
-        </Box>
-      </Box>
-
-    </Box>
-  );
+    <MuiThemeProvider theme={theme}>
+      <CssBaseline />
+      <CartProvider>
+        <BrowserRouter>
+          <Header />
+          <Routes>
+            <Route path="/" element={<ProductsPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </MuiThemeProvider>
+  )
 }
 
-export default App;
+function App() {
+  return (
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
+  )
+}
+
+export default App
+
+

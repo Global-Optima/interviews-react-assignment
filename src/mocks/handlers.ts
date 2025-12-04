@@ -1,99 +1,202 @@
-import { delay, http, HttpResponse } from 'msw';
-import { names } from './names.ts';
+import { http, HttpResponse } from 'msw'
+import type { Product, Order, ProductsResponse } from '@/types'
 
-type Product = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
-  category: string;
-};
+// Mock data
+const mockProducts: Product[] = [
+  {
+    id: '1',
+    title: 'Wireless Headphones',
+    description: 'High-quality wireless headphones with noise cancellation',
+    price: 199.99,
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&fit=crop&q=80',
+    category: 'Electronics',
+  },
+  {
+    id: '2',
+    title: 'Smart Watch',
+    description: 'Feature-rich smartwatch with health tracking',
+    price: 299.99,
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&fit=crop&q=80',
+    category: 'Electronics',
+  },
+  {
+    id: '3',
+    title: 'Laptop Stand',
+    description: 'Ergonomic aluminum laptop stand',
+    price: 49.99,
+    image: '/images/laptop-stand.jpg',
+    category: 'Accessories',
+  },
+  {
+    id: '4',
+    title: 'Mechanical Keyboard',
+    description: 'RGB mechanical keyboard with blue switches',
+    price: 129.99,
+    image: '/images/keyboard.jpg',
+    category: 'Accessories',
+  },
+  {
+    id: '5',
+    title: 'USB-C Hub',
+    description: 'Multi-port USB-C hub with HDMI and SD card reader',
+    price: 79.99,
+    image: '/images/usb-c-hub.jpg.jpg',
+    category: 'Accessories',
+  },
+  {
+    id: '6',
+    title: 'Wireless Mouse',
+    description: 'Ergonomic wireless mouse with long battery life',
+    price: 39.99,
+    image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&fit=crop&q=80',
+    category: 'Accessories',
+  },
+  {
+    id: '7',
+    title: 'Monitor 27"',
+    description: '4K 27-inch monitor with HDR support',
+    price: 449.99,
+    image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&fit=crop&q=80',
+    category: 'Electronics',
+  },
+  {
+    id: '8',
+    title: 'Webcam HD',
+    description: '1080p HD webcam with autofocus',
+    price: 89.99,
+    image: '/images/webcam-hd.jpg.jpg',
+    category: 'Electronics',
+  },
+  {
+    id: '9',
+    title: 'Desk Lamp',
+    description: 'LED desk lamp with adjustable brightness',
+    price: 59.99,
+    image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&fit=crop&q=80',
+    category: 'Accessories',
+  },
+  {
+    id: '10',
+    title: 'Tablet Stand',
+    description: 'Adjustable tablet stand for desk use',
+    price: 34.99,
+    image: '/images/tablet-stand.jpg',
+    category: 'Accessories',
+  },
+  {
+    id: '11',
+    title: 'Chair',
+    description: 'Ergonomic gaming chair with lumbar support',
+    price: 349.99,
+    image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&fit=crop&q=80',
+    category: 'Furniture',
+  },
+  {
+    id: '12',
+    title: 'Standing Desk',
+    description: 'Electric height-adjustable standing desk',
+    price: 599.99,
+    image: '/images/standing-desk.jpg',
+    category: 'Furniture',
+  },
+]
 
-const categories = ['Laptops', 'Smartphones', 'Tablets', 'Accessories', 'Audio', 'Gaming', 'Wearables', 'Cameras'];
-
-function randomTechCategory() {
-  return categories[Math.floor(Math.random() * categories.length)];
-}
-
-// generate a rondom list of product with approriate library
-const products: Product[] = names.map((name, index) => ({
-  id: index,
-  name: name,
-  imageUrl: `https://via.placeholder.com/150?text=Product+${index}`,
-  price: parseFloat((Math.random() * 2970 + 29).toFixed(2)), // $29 - $2999
-  category: randomTechCategory(),
-}));
-
-let cart: Record<number, number> = {};
-
-function computeCart() {
-  const detailedCart = Object.entries(cart)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .filter(([_, quantity]) => quantity > 0)
-    .map(([productId, quantity]) => {
-      const product = products.find((p) => p.id === parseInt(productId, 10))!;
-      return {
-        product,
-        quantity,
-      };
-    });
-  const totalPrice = detailedCart.reduce((acc, { product, quantity }) => acc + product.price * quantity, 0);
-  const totalItems = detailedCart.reduce((acc, { quantity }) => acc + quantity, 0);
-  return HttpResponse.json({
-    items: detailedCart,
-    totalPrice,
-    totalItems,
-  });
-}
+const categories = Array.from(new Set(mockProducts.map((p) => p.category)))
 
 export const handlers = [
-  http.get('/products', async ({ request }) => {
-    await delay();
-    // Construct a URL instance out of the intercepted request.
-    const url = new URL(request.url);
+  // GET /api/products
+  http.get('/api/products', ({ request }) => {
+    const url = new URL(request.url)
+    const search = url.searchParams.get('search') || ''
+    const category = url.searchParams.get('category') || ''
+    const sort = url.searchParams.get('sort') || 'name_asc'
+    const page = parseInt(url.searchParams.get('page') || '1', 10)
+    const limit = parseInt(url.searchParams.get('limit') || '12', 10)
 
-    // Read the "id" URL query parameter using the "URLSearchParams" API.
-    // Given "/product?id=1", "productId" will equal "1".
-    const searchQuery = url.searchParams.get('q');
-    const category = url.searchParams.get('category');
-    const page = url.searchParams.get('page') || '0';
-    const limit = url.searchParams.get('limit') || '10';
+    let filtered = [...mockProducts]
 
-    const filteredProducts = products.filter((product) => {
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      if (category && product.category !== category) {
-        return false;
-      }
-      return true;
-    });
-    const realPage = parseInt(page, 10) || 0;
-    const realLimit = parseInt(limit, 10) || 10;
-    const pageList = filteredProducts.slice(realPage * realLimit, (realPage + 1) * realLimit);
+    // Filter by search
+    if (search) {
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchLower) ||
+          p.description.toLowerCase().includes(searchLower)
+      )
+    }
 
-    return HttpResponse.json({
-      products: pageList,
-      total: filteredProducts.length,
-      hasMore: realPage * realLimit + realLimit < filteredProducts.length,
-    });
+    // Filter by category
+    if (category) {
+      filtered = filtered.filter((p) => p.category === category)
+    }
+
+    // Sort
+    switch (sort) {
+      case 'price_asc':
+        filtered.sort((a, b) => a.price - b.price)
+        break
+      case 'price_desc':
+        filtered.sort((a, b) => b.price - a.price)
+        break
+      case 'name_asc':
+        filtered.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case 'name_desc':
+        filtered.sort((a, b) => b.title.localeCompare(a.title))
+        break
+    }
+
+    // Paginate
+    const start = (page - 1) * limit
+    const end = start + limit
+    const paginated = filtered.slice(start, end)
+    const hasMore = end < filtered.length
+
+    const response: ProductsResponse = {
+      products: paginated,
+      total: filtered.length,
+      page,
+      limit,
+      hasMore,
+    }
+
+    return HttpResponse.json(response)
   }),
-  http.post<never, { productId: number; quantity: number }>('/cart', async ({ request }) => {
-    await delay(1000);
-    const { productId, quantity } = await request.json();
-    const currentQuantity = cart[productId] || 0;
-    cart[productId] = currentQuantity + quantity;
-    return computeCart();
-  }),
-  http.get('/cart', async () => {
-    await delay();
-    return HttpResponse.json(computeCart());
-  }),
-  http.post('/orders', async () => {
-    await delay(1500);
 
-    cart = {};
-
-    return new HttpResponse(undefined, Math.random() > 0.5 ? { status: 200 } : { status: 500 });
+  // GET /api/products/:id
+  http.get('/api/products/:id', ({ params }) => {
+    const { id } = params
+    const product = mockProducts.find((p) => p.id === id)
+    if (!product) {
+      return HttpResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+    return HttpResponse.json(product)
   }),
-];
+
+  // GET /api/categories
+  http.get('/api/categories', () => {
+    return HttpResponse.json(categories)
+  }),
+
+  // POST /api/orders
+  http.post('/api/orders', async ({ request }) => {
+    const orderData = (await request.json()) as Omit<Order, 'id' | 'createdAt'>
+
+    // 50% chance of error
+    if (Math.random() > 0.5) {
+      return HttpResponse.json(
+        { error: 'Order creation failed. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    const order: Order = {
+      ...orderData,
+      id: `order-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    }
+
+    return HttpResponse.json(order, { status: 201 })
+  }),
+]
+
