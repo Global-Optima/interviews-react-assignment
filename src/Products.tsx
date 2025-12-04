@@ -5,8 +5,19 @@ import { useProducts } from './hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { Cart } from './types';
 
-export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void }) => {
-  const { products, loading, hasMore, loadMore, setProducts } = useProducts();
+export const Products = ({
+  onCartChange,
+  searchTerm,
+  selectedCategory
+}: {
+  onCartChange: (cart: Cart) => void;
+  searchTerm: string;
+  selectedCategory: string;
+}) => {
+  const { products, loading, hasMore, loadMore, setProducts } = useProducts({
+    searchTerm,
+    category: selectedCategory
+  });
   const [targetRef, isIntersecting] = useIntersectionObserver();
 
   useEffect(() => {

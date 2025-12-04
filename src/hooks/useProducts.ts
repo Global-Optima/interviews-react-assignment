@@ -1,19 +1,32 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Product } from '../types';
 
-export function useProducts() {
+export function useProducts({ searchTerm, category }: { searchTerm: string; category: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const limit = 20;
 
+    useEffect(() => {
+        setProducts([]);
+        setPage(0);
+        setHasMore(true);
+    }, [searchTerm, category]);
+
     const fetchProducts = useCallback(async () => {
         if (loading || !hasMore) return;
 
         setLoading(true);
         try {
-            const response = await fetch(`/products?limit=${limit}&page=${page}`);
+            const queryParams = new URLSearchParams({
+                limit: limit.toString(),
+                page: page.toString(),
+                q: searchTerm,
+                category: category,
+            });
+
+            const response = await fetch(`/products?${queryParams.toString()}`);
             const data = await response.json();
 
             if (data.products.length < limit) {
@@ -21,6 +34,10 @@ export function useProducts() {
             }
 
             setProducts(prev => {
+                if (page === 0) {
+                    return data.products;
+                }
+
                 const newProducts = data.products.filter(
                     (newP: Product) => !prev.some(existingP => existingP.id === newP.id)
                 );
@@ -33,13 +50,13 @@ export function useProducts() {
         } finally {
             setLoading(false);
         }
-    }, [page, loading, hasMore]);
+    }, [page, loading, hasMore, searchTerm, category]);
 
     useEffect(() => {
         if (page === 0) {
             fetchProducts();
         }
-    }, [fetchProducts, page]);
+    }, [page, searchTerm, category]);
 
     return {
         products,
