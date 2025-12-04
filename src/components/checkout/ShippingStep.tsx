@@ -36,7 +36,7 @@ const ShippingStep: React.FC<StepProps> = ({ shipping, setShipping }) => {
         if (!value.trim()) error = "City is required";
         break;
       case "postalCode":
-        if (!/^\d{6}(-\d{4})?$/.test(value)) error = "Invalid postal code";
+        if (!/^\d{5}(-\d{4})?$/.test(value)) error = "Invalid postal code";
         break;
       case "phone":
         const cleaned = value.replace(/\D/g, "");
