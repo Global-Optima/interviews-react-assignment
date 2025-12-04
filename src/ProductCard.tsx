@@ -23,6 +23,7 @@ interface ProductCardProps {
 export const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
     return (
         <Grid item xs={12} sm={6} md={4}>
+            {/* Do not remove this */}
             <HeavyComponent />
             <Card style={{ width: '100%' }}>
                 <CardMedia
