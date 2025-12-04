@@ -36,11 +36,13 @@ const ShippingStep: React.FC<StepProps> = ({ shipping, setShipping }) => {
         if (!value.trim()) error = "City is required";
         break;
       case "postalCode":
-        if (!/^\d{5}(-\d{4})?$/.test(value)) error = "Invalid postal code";
+        if (!/^\d{6}(-\d{4})?$/.test(value)) error = "Invalid postal code";
         break;
       case "phone":
-        if (!/^[\+]?[1-9][\d]{9,14}$/.test(value.replace(/\D/g, "")))
+        const cleaned = value.replace(/\D/g, "");
+        if (!/^7[0-9]{9}$/.test(cleaned)) {
           error = "Invalid phone number";
+        }
         break;
     }
     setErrors((prev) => ({ ...prev, [field]: error }));
@@ -121,7 +123,7 @@ const ShippingStep: React.FC<StepProps> = ({ shipping, setShipping }) => {
             helperText={errors.phone}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">+1</InputAdornment>
+                <InputAdornment position="start">+7</InputAdornment>
               ),
             }}
             inputProps={{ inputMode: "tel" }}

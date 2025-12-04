@@ -14,17 +14,7 @@ import {
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import { HeavyComponent } from "./HeavyComponent.tsx";
-import { Cart } from "../types/checkout.ts";
-
-export type Product = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
-  category: string;
-  itemInCart: number;
-  loading: boolean;
-};
+import { Cart, Product } from "../types/checkout.ts";
 
 export const Products = ({
   onCartChange,
