@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Grid } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver';
 import { useProducts } from './hooks/useProducts';
 import { ProductCard } from './ProductCard';
@@ -26,7 +26,7 @@ export const Products = ({
     }
   }, [isIntersecting, hasMore, loading, loadMore]);
 
-  function addToCart(productId: number, quantity: number) {
+  const addToCart = useCallback((productId: number, quantity: number) => {
     setProducts(prev => prev.map(product => {
       if (product.id === productId) {
         return {
@@ -59,7 +59,7 @@ export const Products = ({
         onCartChange(cart);
       }
     });
-  }
+  }, [setProducts, onCartChange]);
 
   return (
     <Box overflow="auto" height="100%">
