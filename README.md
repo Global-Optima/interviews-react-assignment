@@ -1,243 +1,331 @@
-<!--
-Hi! We're happy you opened this file, not everyone does!
-To let us know you did, add a 🚀 emoji next to your name 
-in the How to Run section 😊 
-These will be extra points for you!
--->
+# Shop CRM - Global Optima React Assignment
 
-# React Developer Interview Assignment
+Production-grade React приложение для интернет-магазина с полным функционалом каталога, корзины и оформления заказа.
 
-## Introduction
+## 🚀 Технологический стек
 
-This is a technical interview exercise for **Gotech**'s Engineering team. In the following sections, you will find a number of challenges that test your React, TypeScript, and frontend development skills. You **DO NOT need to complete 100% of them**: choose the challenges that best demonstrate your expertise and complete them to a high standard.
+- **React 18** - UI библиотека
+- **TypeScript** - Типизация
+- **Vite** - Сборщик и dev-сервер
+- **Material UI v5** - Компонентная библиотека
+- **MSW (Mock Service Worker)** - Мокирование API
+- **React Router** - Маршрутизация
+- **pnpm** - Менеджер пакетов
 
-⏱️ You have **1 week** to submit your solution. We understand you have other commitments, so work at your own pace. We evaluate based on **code quality, architecture, and problem-solving approach**, not speed.
+## ✨ Основные возможности
 
-### Deliverables
+### 🎨 Темная тема
+- ✅ Переключатель светлой/темной темы
+- ✅ Автоматическое сохранение выбора в localStorage
+- ✅ Адаптивные цвета для всех компонентов
+- ✅ Корректное отображение изображений в обеих темах
 
-Fork this repository and treat it as a real-world project. We'll review your work in one week.
+### 📦 Каталог продуктов
+- ✅ Получение данных из MSW `/api/products`
+- ✅ Пагинация (12 товаров на страницу)
+- ✅ Карточки товаров с изображениями, названием, ценой, категорией
+- ✅ Детальная модалка товара с выбором количества
+- ✅ Skeleton loading states
+- ✅ Error states с возможностью retry
+- ✅ Empty states
 
-### Evaluation Criteria
+### 🔍 Поиск и фильтры
+- ✅ Поиск по названию и описанию товара
+- ✅ Debounce 400ms для поиска
+- ✅ Фильтр по категориям
+- ✅ Комбинирование поиска + категории + сортировка
+- ✅ Синхронизация состояния в URL query params
+- ✅ Восстановление фильтров из URL при загрузке страницы
+- ✅ Кнопка Reset для сброса фильтров
 
-Your submission will be assessed on:
+### 📊 Сортировка
+- ✅ По цене: min→max, max→min
+- ✅ По имени: A→Z, Z→A
+- ✅ Применение к пагинированным данным
 
-* **Code Quality** - Clean, readable, maintainable code
-* **Architecture & Design Patterns** - Proper separation of concerns, reusable components
-* **Performance Optimization** - Efficient rendering, proper memoization
-* **TypeScript Usage** - Strong typing, proper interfaces
-* **Project Structure** - Logical organization, scalability
-* **Git Workflow** - Meaningful commits, branch strategy
-* **Testing** (bonus) - Unit tests, integration tests
-* **Documentation** - Clear README, code comments where needed
+### 🛒 Корзина
+- ✅ Добавление товара в корзину (с карточки и из модального окна)
+- ✅ Удаление товара из корзины
+- ✅ Изменение количества товара (+/-)
+- ✅ Оптимистичные обновления
+- ✅ Сохранение состояния в localStorage
+- ✅ Значок количества товаров в header (CartBadge)
+- ✅ Страница корзины с итоговой суммой
 
-#### Using AI Tools:
+### 💳 Checkout Flow (4 шага)
+- ✅ **Step 1: Cart Review** - Просмотр товаров в корзине
+- ✅ **Step 2: Shipping Details** - Форма доставки с валидацией
+  - Full name, Phone, Address, City, ZIP code, Country
+  - Все поля обязательные
+  - Сохранение в localStorage
+- ✅ **Step 3: Payment Method** - Выбор способа оплаты
+  - Credit Card (с валидацией: 16 цифр, MM/YY, CVV)
+  - PayPal (имитация redirect screen)
+  - Cash on Delivery
+- ✅ **Step 4: Review & Confirm** - Подтверждение заказа
+  - Список товаров
+  - Адрес доставки
+  - Метод оплаты
+  - Итоговая сумма
+  - POST `/api/orders` с 50% шансом ошибки
+  - Success screen при успехе
+  - Error screen с retry при ошибке
+  - Очистка корзины после успешного заказа
 
-We encourage modern development practices, including AI-assisted coding tools (GitHub Copilot, ChatGPT, etc.). However, **you must understand every line of code you submit**. During the technical interview, you'll be asked to explain your decisions, trade-offs, and implementation details. Use AI as a productivity tool, but ensure the solutions reflect your expertise.
+### ⚡ Производительность
+- ✅ `React.memo` для компонентов (ProductCard, ProductFilters, CartItemCard, CartSummary)
+- ✅ `useCallback` для обработчиков событий
+- ✅ `useMemo` для вычисляемых значений
+- ✅ Минимизация ререндеров
+- ✅ Debounce для поиска
+- ✅ Оптимизация списков товаров
 
-### Let's Get Started
+### 🎨 Дизайн
+- ✅ Pixel-perfect верстка
+- ✅ MUI Theme с кастомной палитрой
+- ✅ Поддержка светлой и темной темы
+- ✅ Типографика (Inter, Roboto)
+- ✅ Скругления: 12px (карточки, кнопки), 10px (инпуты), 16px (модалки)
+- ✅ Адаптивность: Desktop, Tablet, Mobile
+- ✅ Состояния: hover, active, disabled
+- ✅ Skeleton loaders
 
-Some challenges may be unfamiliar—that's intentional. Pick challenges that match your skill level and complete them thoroughly. We value quality over quantity.
+## 📁 Архитектура проекта
 
-⚠️ **Important**: Requirements are intentionally broad to give you creative freedom. Document your assumptions, decisions, and trade-offs. In a real-world scenario, what questions would you ask stakeholders?
-
----   
-
-## Problem Domain
-
-Build a web application for **TechHub**, gotech's consumer electronics e-commerce platform. Users can browse tech products (laptops, smartphones, accessories, etc.), filter by category, add items to cart, and complete checkout.
-
-**Scope**: Focus on the **customer-facing** application only (no admin panel needed).
-
-**Simplifications**: 
-- No authentication required (single user)
-- No real payment processing
-- Single page application (SPA) is acceptable
-
----
-
-## Challenges
-
-### Challenge #1: Product List with Infinite Scroll ⭐
-
-**Context**: A junior developer started building the product listing page but couldn't implement proper pagination. Currently, the app fetches ALL products at once (`limit=200`), which won't scale.
-
-**Your Tasks**:
-1. Implement **infinite scroll** pagination (load more products as user scrolls)
-2. Refactor the `Products` component for better maintainability
-3. Add proper loading states
-4. Fix the missing `key` prop warning (hint: check Grid vs Card placement)
-5. Handle edge cases (empty states, API errors)
-
-**Evaluation Focus**: 
-- Clean component architecture
-- Proper React hooks usage
-- User experience during loading
-
----
-
-### Challenge #2: Advanced Search & Filtering ⭐⭐
-
-**Context**: The UI has a search bar and category sidebar, but neither is functional.
-
-**Your Tasks**:
-1. Implement **real-time search** that filters products as user types
-2. Connect category buttons to filter products
-3. Allow **combining** search + category filters
-4. Add debouncing to search input (performance optimization)
-5. Update URL query parameters to make filters shareable
-6. Add a "Clear Filters" option
-7. Show active filter indicators
-
-**Bonus**:
-- Add price range filter
-- Add sorting options (price low-to-high, name A-Z, etc.)
-- Show result count
-
-**Evaluation Focus**:
-- State management strategy
-- Performance optimization (debouncing, unnecessary re-renders)
-- UX polish
-
----
-
-### Challenge #3: Performance Optimization ⭐⭐⭐
-
-**Context**: The product list has serious performance issues:
-- Each product renders a `HeavyComponent` (simulating slow components)
-- Cart updates are sluggish
-- Backend has 1000ms latency (realistic for slow APIs)
-
-**Your Tasks**:
-1. **Fix the rendering performance** (hint: memoization, virtualization)
-   - ⚠️ Do NOT remove `HeavyComponent`—optimize around it
-2. **Fix the cart update bug** (line 59: stale closure issue)
-3. Implement **optimistic UI updates** for add/remove cart actions
-4. Prevent unnecessary re-renders
-5. **Provide proof** of performance improvements (screenshots, metrics, profiler data)
-
-**Bonus**:
-- Implement virtual scrolling for large product lists
-- Add request cancellation for outdated searches
-
-**Evaluation Focus**:
-- Understanding of React rendering behavior
-- Profiling and measurement skills
-- Real-world performance optimization techniques
-
----
-
-### Challenge #4: Multi-Step Checkout Flow ⭐⭐⭐
-
-**Context**: Not implemented yet. Build a complete checkout experience.
-
-**Your Tasks**:
-
-Build a **4-step checkout wizard**:
-
-**Step 1: Cart Review**
-- Display cart items with quantities
-- Show subtotal, tax (calculate as 10%), and total
-- Allow editing quantities or removing items
-- Show empty cart state
-
-**Step 2: Shipping Details**
-- Form: Full name, address, city, postal code, phone
-- Delivery time slot selection (Morning, Afternoon, Evening)
-- Form validation with proper error messages
-- Save to local storage (persist on refresh)
-
-**Step 3: Payment Method**
-- Radio selection: Credit Card, PayPal, Cash on Delivery
-- If Credit Card: show card number, expiry, CVV inputs (validation only, no real processing)
-- If PayPal: show mock redirect message
-- Visual payment method icons
-
-**Step 4: Order Confirmation**
-- Summary of: items, shipping address, payment method, total
-- "Place Order" button (calls `/orders` endpoint)
-- Handle success/failure (backend has 50% failure rate)
-- On success: clear cart, show confirmation message
-- On failure: show error, allow retry
-
-**Requirements**:
-- Progress indicator showing current step
-- Back/Next navigation
-- Validate each step before proceeding
-- Responsive design
-- Accessibility (keyboard navigation, ARIA labels)
-
-**Bonus**:
-- Animate step transitions
-- Add order tracking number on success
-- Email preview/summary
-
-**Evaluation Focus**:
-- Form management (controlled vs uncontrolled)
-- State management across steps
-- Validation strategy
-- UX and accessibility
-- Error handling
-
----
-
-## Technical Stack
-
-The project uses:
-- **React 18** + **TypeScript**
-- **Material-UI (MUI)** v5
-- **Vite** (build tool)
-- **MSW** (Mock Service Worker) for API mocking
-- **pnpm** (package manager)
-
-## API Endpoints (Mocked)
-
-All endpoints are mocked with MSW:
-
-- `GET /products?q=search&category=Laptops&page=0&limit=10` - Fetch products
-- `POST /cart` - Add/remove items (1000ms delay)
-- `GET /cart` - Get current cart
-- `POST /orders` - Submit order (50% random success/failure)
-
-## How to Run
-
-<!-- Add your name and 🚀 emoji here if you read the hidden message! -->
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Lint
-pnpm lint
+```
+src/
+├── api/              # API клиенты
+│   ├── products.ts   # API для продуктов
+│   └── orders.ts     # API для заказов
+├── components/       # React компоненты
+│   ├── checkout/     # Компоненты checkout flow
+│   ├── Header.tsx
+│   ├── ProductCard.tsx
+│   ├── ProductFilters.tsx
+│   ├── ProductModal.tsx
+│   ├── CartItemCard.tsx
+│   └── CartSummary.tsx
+├── context/          # React Context
+│   ├── CartContext.tsx
+│   └── ThemeContext.tsx
+├── hooks/            # Custom hooks
+│   ├── useDebounce.ts
+│   ├── useProducts.ts
+│   └── useCategories.ts
+├── mocks/            # MSW handlers
+│   ├── handlers.ts
+│   └── browser.ts
+├── pages/            # Страницы приложения
+│   ├── ProductsPage.tsx
+│   ├── CartPage.tsx
+│   └── CheckoutPage.tsx
+├── theme/            # MUI Theme конфигурация
+│   └── index.ts
+├── types/            # TypeScript типы
+│   └── index.ts
+├── utils/            # Утилиты
+│   └── urlSync.ts
+├── App.tsx
+└── main.tsx
 ```
 
-## Submission Guidelines
+## 🛠 Установка и запуск
 
-1. **Fork** this repository
-2. Create a new branch: `solution/your-name`
-3. Commit regularly with clear messages
-4. Update this README with:
-   - Your name
-   - Which challenges you completed
-   - Key decisions and trade-offs
-   - How to test your features
-   - Any assumptions made
-5. **Submit a Pull Request** to the original repo
+### Предварительные требования
+- Node.js 18+
+- pnpm (или npm)
+
+### Установка зависимостей
+```bash
+pnpm install
+```
+
+### Инициализация MSW (Mock Service Worker)
+После установки зависимостей необходимо инициализировать MSW worker:
+
+```bash
+npx msw init public/ --save
+```
+
+Это создаст файл `public/mockServiceWorker.js`, который необходим для работы моков API в браузере.
+
+### Запуск dev-сервера
+```bash
+pnpm dev
+```
+
+Приложение будет доступно по адресу: **http://localhost:3000**
+
+### Сборка для production
+```bash
+pnpm build
+```
+
+### Просмотр production сборки
+```bash
+pnpm preview
+```
+
+## 🧪 Тестирование
+
+### Запуск тестов
+```bash
+pnpm test
+```
+
+### Запуск тестов с UI
+```bash
+pnpm test:ui
+```
+
+### Реализованные тесты
+- ✅ Unit-тесты для `useDebounce` hook
+- ✅ Unit-тесты для `CartContext` (добавление, удаление, обновление количества, расчеты)
+
+## 🎨 Дизайн-система
+
+### Цветовая палитра
+
+**Светлая тема:**
+- **Primary**: #3D5AFE (main), #8187FF (light), #0028CA (dark)
+- **Secondary**: #FF5252 (main), #FF867F (light), #C50E29 (dark)
+- **Greys**: #212121, #424242, #9E9E9E, #E0E0E0, #F5F5F5, #FAFAFA
+- **Background**: #F6F7FB (default), #FFFFFF (paper)
+- **Success**: #4CAF50
+- **Error**: #F44336
+- **Warning**: #FFC107
+
+**Темная тема:**
+- Адаптивные цвета для всех компонентов
+- Темный фон: #121212 (default), #1E1E1E (paper)
+- Корректное отображение текста и элементов
+
+### Типографика
+- **Font Family**: Inter, Roboto, sans-serif
+- **h1**: 32px / 700
+- **h2**: 24px / 600
+- **h3**: 20px / 600
+- **subtitle1**: 16px / 500
+- **body1**: 15px / 400
+- **body2**: 14px / 400
+- **caption**: 12px / 400
+
+## 🎯 Особенности реализации
+
+### MSW Mock API
+- `/api/products` - GET с поддержкой фильтров, поиска, сортировки, пагинации
+- `/api/products/:id` - GET детальной информации о товаре
+- `/api/categories` - GET списка категорий
+- `/api/orders` - POST создания заказа (50% шанс ошибки для демонстрации обработки ошибок)
+
+### URL синхронизация
+Фильтры автоматически синхронизируются с URL query params:
+- `?search=keyword&category=Electronics&sort=price_asc&page=1`
+- При загрузке страницы фильтры восстанавливаются из URL
+
+### LocalStorage
+- Состояние корзины сохраняется в `localStorage` с ключом `global-optima-cart`
+- Выбор темы сохраняется в `localStorage` с ключом `global-optima-theme`
+- Автоматическая загрузка при монтировании приложения
+- Автоматическое сохранение при изменении состояния
+
+### Управление корзиной
+- Добавление с карточки товара - суммирует количество
+- Добавление из модального окна - заменяет количество (если товар уже есть)
+- Оптимистичные обновления для лучшего UX
+
+## 📦 Структура данных
+
+### Product
+```typescript
+{
+  id: string
+  title: string
+  description: string
+  price: number
+  image: string
+  category: string
+}
+```
+
+### CartItem
+```typescript
+{
+  product: Product
+  quantity: number
+}
+```
+
+### ShippingDetails
+```typescript
+{
+  fullName: string
+  phone: string
+  address: string
+  city: string
+  zipCode: string
+  country: string
+}
+```
+
+### PaymentDetails
+```typescript
+{
+  method: 'credit_card' | 'paypal' | 'cash_on_delivery'
+  cardNumber?: string
+  expiration?: string
+  cvv?: string
+}
+```
+
+## 🚀 Деплой
+
+Проект готов к деплою на любую платформу (Vercel, Netlify, GitHub Pages и т.д.).
+
+### Подготовка к деплою
+```bash
+pnpm build
+```
+
+Собранные файлы будут в папке `dist/`.
+
+## 📝 Дополнительные улучшения
+
+1. **Производительность**
+   - Использование `React.memo` для предотвращения ненужных ререндеров
+   - `useCallback` и `useMemo` для оптимизации вычислений
+   - Debounce для поиска
+
+2. **UX**
+   - Skeleton loaders вместо спиннеров
+   - Error states с возможностью retry
+   - Empty states с призывом к действию
+   - Валидация форм с понятными сообщениями об ошибках
+   - Поддержка темной темы
+
+3. **Архитектура**
+   - Четкое разделение на слои (api, hooks, components, pages)
+   - Типизация всех сущностей
+   - Централизованное управление состоянием корзины через Context
+   - Централизованное управление темой через Context
+   - Синхронизация фильтров с URL
+
+4. **Код**
+   - Чистый, предсказуемый код
+   - Обработка ошибок
+   - Оптимистичные обновления
+   - Сохранение состояния в localStorage
+
+## 🐛 Известные ограничения
+
+1. MSW работает только в development режиме
+2. Некоторые изображения товаров используют placeholder URLs (Unsplash)
+3. PayPal и Cash on Delivery - только UI, без реальной интеграции
+
+## 📄 Лицензия
+
+Этот проект создан в рамках технического задания для Global Optima.
 
 ---
 
-## Notes
-
-- Focus on **code quality** over completing all challenges
-- **Document your decisions** in code comments or this README
-- If you skip a challenge, briefly explain why
-- Treat this like production code you'd ship to real users
-
-**Questions?** In a real scenario, you'd ask your team lead. For this assignment, document your assumptions and move forward.
-
-Good luck! 🚀
+**Разработано с использованием лучших практик React и TypeScript** 🚀
