@@ -26,11 +26,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ productId, quantity }),
       });
         
-    console.log(productId, quantity, 'Add to cart response status:', response.status);
-
       if (response.ok) {
         const updatedCart = await response.json();
-        console.log('Updated cart from server:', updatedCart);
+
         setCart(updatedCart);
         return updatedCart;
       }
@@ -53,8 +51,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     return cart?.items.find(item => item.product.id === productId)?.quantity || 0;
   }, [cart]);
-
-  console.log('Cart context value:', { cart, loadingItems });
 
   return (
     <CartContext.Provider value={{ cart, addToCart, isProductLoading, getProductQuantity }}>

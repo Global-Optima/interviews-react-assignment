@@ -7,6 +7,7 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useCart } from './features/cart/hooks/use-cart';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -51,7 +52,9 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function SearchAppBar({ quantity, price }: { quantity: number, price: number }) {
+export default function SearchAppBar() {
+  const {cart} = useCart()
+
   return (
     <Box>
       <AppBar position="relative">
@@ -78,10 +81,10 @@ export default function SearchAppBar({ quantity, price }: { quantity: number, pr
               Total:
             </Typography>
             <Typography variant="h6" noWrap component="div">
-              $ {(price || 0).toFixed(2)}
+              $ {(cart?.totalPrice || 0).toFixed(2)}
             </Typography>
           </Box>
-          <Badge badgeContent={quantity || 0} color="secondary">
+          <Badge badgeContent={cart?.totalItems || 0} color="secondary">
             <ShoppingCartIcon/>
           </Badge>
         </Toolbar>
