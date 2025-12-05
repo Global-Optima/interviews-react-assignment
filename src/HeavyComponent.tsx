@@ -5,9 +5,8 @@ const heavyness = 2;
 // do not remove this component
 export const HeavyComponent = memo(function HeavyComponent() {
   const now = new Date().getTime();
-  while (new Date().getTime() < now + heavyness) {
-    // a comment to remove lint error
-  }
+  // eslint-disable-next-line no-empty
+  while (new Date().getTime() < now + heavyness) { }
   return (
     <></>
   );
