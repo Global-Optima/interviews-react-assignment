@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { fetchProducts } from "../api/product-api";
 
 export const useInfiniteProducts = () => {
+  const elementRef = useRef<HTMLDivElement | null>(null);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(0);
   const fetchedPagesRef = useRef<Set<number>>(new Set()); //to avoid dublicate fetches, strict mode bug
@@ -30,8 +32,8 @@ export const useInfiniteProducts = () => {
   }
   
   useEffect(() => {
-      document.addEventListener('scroll', handleScroll);
-    return () => document.removeEventListener('scroll', handleScroll)
+      elementRef.current?.addEventListener('scroll', handleScroll);
+    return () => elementRef.current?.removeEventListener('scroll', handleScroll)
   }, []);
 
   useEffect(() => {
@@ -62,5 +64,5 @@ export const useInfiniteProducts = () => {
   }, [page]);
 
 
-  return { products, loading, allFetched };
+  return { products, loading, allFetched, elementRef };
 }

@@ -8,18 +8,44 @@ import { useProductSearch } from "../../features/products/hooks/use-product-sear
 import { useCategories } from "../../features/products/hooks/use-categories";
 
 export const ShopPage = () => {
-  const { products, loading, allFetched } = useInfiniteProducts();
+  const { products, loading, allFetched, elementRef } = useInfiniteProducts();
   const { addToCart, isProductLoading, getProductQuantity } = useCart();
-  const {searchValue, setSearchValue, searchedProducts} = useProductSearch({unsearchedProducts: products});
-  const {categories, toggleCategory, filteredProducts, setCategories} = useCategories({unfilteredProducts: searchedProducts});
+  const { searchValue, setSearchValue, searchedProducts } = useProductSearch({
+    unsearchedProducts: products,
+  });
+  const { categories, toggleCategory, filteredProducts, setCategories } =
+    useCategories({ unfilteredProducts: searchedProducts });
 
   return (
     <Box>
-      <ProductSearchBar onSearchChange={setSearchValue} searchValue={searchValue} />
-      <Box flex={1} display="flex" flexDirection="row">
-        <Categories categories={categories} onCategorySelect={(selectedCategory) => toggleCategory(selectedCategory)} onCategoryClear={() => setCategories([])}/>
-        <Box flex={1}>
-          <Box overflow="scroll" height="100%">
+      <ProductSearchBar
+        onSearchChange={setSearchValue}
+        searchValue={searchValue}
+      />
+      <Box
+        flex={1}
+        display="flex"
+        flexDirection="row"
+        height="calc(100vh - 80px)"
+      >
+        <Categories
+          categories={categories}
+          onCategorySelect={(selectedCategory) =>
+            toggleCategory(selectedCategory)
+          }
+          onCategoryClear={() => setCategories([])}
+        />
+        <Box flex={1} display="flex" flexDirection="column">
+          <Box p={2}>Total products: {filteredProducts.length}</Box>
+
+          <Box
+            flex={1}
+            ref={elementRef}
+            overflow="auto"
+            sx={{
+              paddingRight: 2,
+            }}
+          >
             <Grid container spacing={2} p={2}>
               {filteredProducts.map((product) => (
                 <ProductCard
@@ -37,13 +63,11 @@ export const ShopPage = () => {
                 <Grid
                   item
                   xs={4}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
                 >
-                  <CircularProgress></CircularProgress>
+                  <CircularProgress />
                 </Grid>
               )}
 
@@ -51,29 +75,25 @@ export const ShopPage = () => {
                 <Grid
                   item
                   xs={12}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
                 >
-                  <Typography variant="body1" component="div" my={2}>
+                  <Typography variant="body1" my={2}>
                     All products are loaded.
                   </Typography>
                 </Grid>
               )}
 
               {searchValue && searchedProducts.length === 0 && !loading && (
-                      <Grid
+                <Grid
                   item
                   xs={12}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
                 >
-                  <Typography variant="body1" component="div" my={2}>
+                  <Typography variant="body1" my={2}>
                     No products found for "{searchValue}"
                   </Typography>
                 </Grid>

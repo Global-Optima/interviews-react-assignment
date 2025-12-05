@@ -62,11 +62,11 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 **Context**: A junior developer started building the product listing page but couldn't implement proper pagination. Currently, the app fetches ALL products at once (`limit=200`), which won't scale.
 
 **Your Tasks**:
-1. Implement **infinite scroll** pagination (load more products as user scrolls)
-2. Refactor the `Products` component for better maintainability
-3. Add proper loading states
-4. Fix the missing `key` prop warning (hint: check Grid vs Card placement)
-5. Handle edge cases (empty states, API errors)
+1. Implement **infinite scroll** pagination (load more products as user scrolls) x
+2. Refactor the `Products` component for better maintainability x
+3. Add proper loading states x
+4. Fix the missing `key` prop warning (hint: check Grid vs Card placement) x
+5. Handle edge cases (empty states, API errors) TODO
 
 **Evaluation Focus**: 
 - Clean component architecture
@@ -91,13 +91,13 @@ I decided to use context for cart, as it should be global and either way connect
 **Context**: The UI has a search bar and category sidebar, but neither is functional.
 
 **Your Tasks**:
-1. Implement **real-time search** that filters products as user types
-2. Connect category buttons to filter products
-3. Allow **combining** search + category filters
-4. Add debouncing to search input (performance optimization)
+1. Implement **real-time search** that filters products as user types x
+2. Connect category buttons to filter products x
+3. Allow **combining** search + category filters x
+4. Add debouncing to search input (performance optimization) x
 5. Update URL query parameters to make filters shareable
-6. Add a "Clear Filters" option
-7. Show active filter indicators
+6. Add a "Clear Filters" option x
+7. Show active filter indicators x
 
 **Bonus**:
 - Add price range filter
