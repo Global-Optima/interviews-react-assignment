@@ -6,5 +6,7 @@ export const worker = setupWorker(...handlers)
 
 
 export function enableMockServiceWorker() {
-  return worker.start()
+  return worker.start({
+    onUnhandledRequest: "bypass",
+  })
 }

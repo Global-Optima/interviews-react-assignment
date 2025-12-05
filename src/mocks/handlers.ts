@@ -19,7 +19,7 @@ function randomTechCategory() {
 const products: Product[] = names.map((name, index) => ({
   id: index,
   name: name,
-  imageUrl: `https://via.placeholder.com/150?text=Product+${index}`,
+  imageUrl: `https://placehold.co/150x150?text=Product+${index}`,
   price: parseFloat((Math.random() * 2970 + 29).toFixed(2)), // $29 - $2999
   category: randomTechCategory(),
 }));
