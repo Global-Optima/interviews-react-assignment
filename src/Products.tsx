@@ -34,7 +34,7 @@ export type Cart = {
 
 //todo: move outside
 const fetchProducts = async (page: number): Promise<Product[]> => {
-  const response = await fetch(`/products?page=${page}&limit=0`);
+  const response = await fetch(`/products?page=${page}&limit=40`);
   const data = await response.json();
   return data.products;
 }
@@ -45,20 +45,22 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(0);
   const fetchedPagesRef = useRef<Set<number>>(new Set()); //to avoid dublicate fetches, strict mode bug
+  const allFetchedRef = useRef(false); // stop fetching when all products are fetched
+
 
   const loadingRef = useRef(false);
 
   // todo: debounce? 
   const handleScroll = () => {
-      if (loadingRef.current) return;
+      if (loadingRef.current || allFetchedRef.current) return;
+      console.log('all fetched:', allFetchedRef.current);
 
       const lowestFrame = document.documentElement.scrollHeight - document.documentElement.clientHeight
 
-      const threshold = document.documentElement.clientHeight * 0.2
+      const threshold = document.documentElement.clientHeight * 0.5
 
 
       if (document.documentElement.scrollTop >= lowestFrame - threshold) {
-        console.log('fetch page', page + 1);
         setPage((prevPage) => prevPage + 1);
         loadingRef.current = true;
       }
@@ -72,6 +74,13 @@ export const Products = ({ onCartChange }: { onCartChange: (cart: Cart) => void 
     fetchProducts(page).then(newProducts => {
       //check if page was already fetched
       if( fetchedPagesRef.current.has(page)) {
+        loadingRef.current = false;
+        return;
+      }
+
+      //handle last fetch
+      if (newProducts.length === 0) {
+        allFetchedRef.current = true;
         loadingRef.current = false;
         return;
       }
