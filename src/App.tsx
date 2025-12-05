@@ -5,11 +5,12 @@ import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
 import { useState } from 'react';
 import { useDebounce } from './hooks/useDebounce.ts';
+import { useUrlState } from './hooks/useUrlState.ts';
 
 function App() {
   const [cart, setCart] = useState<Cart>();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlState('q', '', 'replace');
+  const [selectedCategory, setSelectedCategory] = useUrlState('category', '');
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
