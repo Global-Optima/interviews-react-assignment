@@ -2,13 +2,13 @@ import { useState } from "react"
 import { Product } from "../model/types";
 
 interface useProductSearchProps {
-    unfilteredProducts: Product[];
+    unsearchedProducts: Product[];
 }
 
-export const useProductSearch = ({unfilteredProducts}: useProductSearchProps) => {
+export const useProductSearch = ({unsearchedProducts}: useProductSearchProps) => {
     const [searchValue, setSearchValue] = useState("")
 
-    const searchedProducts = unfilteredProducts.filter(product => 
+    const searchedProducts = unsearchedProducts.filter(product => 
         product.name.toLowerCase().includes(searchValue.toLowerCase())
     );
 

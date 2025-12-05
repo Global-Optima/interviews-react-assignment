@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Product } from "../model/types";
 
+interface useCategoriesProps {
+  unfilteredProducts?: Product[];
+}
 
-
-
-export const useCategories = () => {
+export const useCategories = ({unfilteredProducts}: useCategoriesProps) => {
   const [categories, setCategories] = useState<string[]>([]);
 
   const toggleCategory = (category: string) => {  
@@ -16,9 +18,14 @@ export const useCategories = () => {
     });
   }
 
+  const filteredProducts = unfilteredProducts?.filter(product => 
+    categories.length === 0 || categories.includes(product.category)
+  ) || [];
+
   return {
     categories,
     setCategories,
-    toggleCategory
+    toggleCategory,
+    filteredProducts
   };
 };

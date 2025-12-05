@@ -10,8 +10,8 @@ import { useCategories } from "../../features/products/hooks/use-categories";
 export const ShopPage = () => {
   const { products, loading, allFetched } = useInfiniteProducts();
   const { addToCart, isProductLoading, getProductQuantity } = useCart();
-  const {searchValue, setSearchValue, searchedProducts} = useProductSearch({unfilteredProducts: products});
-  const {categories, toggleCategory} = useCategories()
+  const {searchValue, setSearchValue, searchedProducts} = useProductSearch({unsearchedProducts: products});
+  const {categories, toggleCategory, filteredProducts} = useCategories({unfilteredProducts: searchedProducts});
 
   console.log("Selected categories:", categories);
 
@@ -23,7 +23,7 @@ export const ShopPage = () => {
         <Box flex={1}>
           <Box overflow="scroll" height="100%">
             <Grid container spacing={2} p={2}>
-              {searchedProducts.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
