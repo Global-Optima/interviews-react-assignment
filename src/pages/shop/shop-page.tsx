@@ -61,6 +61,22 @@ export const ShopPage = () => {
                   </Typography>
                 </Grid>
               )}
+
+              {searchValue && searchedProducts.length === 0 && !loading && (
+                      <Grid
+                  item
+                  xs={12}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body1" component="div" my={2}>
+                    No products found for "{searchValue}"
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Box>
         </Box>
