@@ -75,11 +75,14 @@ Build a web application for **TechHub**, gotech's consumer electronics e-commerc
 
 **Completion** 
 
+I implemented infinite scroll without external libs (would use Tanstack Query), it manually checks user scrolls a request subsequent pages of data. Loading and erros are properly handled. 
+
+I used double variables for loading and allDataFetched flags, one with state and one with refs. (first is used for rendering, second for internal logic)
 note: using refs when working with event listeners as they operate outside of react cycle
 
-i decided to split products and cart into two separate features
+I decided to split products and cart into two separate features. It sounds like a good idea as for separation of concerns, as well as for future features (multistep cart).
 
-i could use context for cart, as it should be global and either way connected in app
+I decided to use context for cart, as it should be global and either way connected in app.
 
 ---
 
