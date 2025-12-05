@@ -11,15 +11,13 @@ export const ShopPage = () => {
   const { products, loading, allFetched } = useInfiniteProducts();
   const { addToCart, isProductLoading, getProductQuantity } = useCart();
   const {searchValue, setSearchValue, searchedProducts} = useProductSearch({unsearchedProducts: products});
-  const {categories, toggleCategory, filteredProducts} = useCategories({unfilteredProducts: searchedProducts});
-
-  console.log("Selected categories:", categories);
+  const {categories, toggleCategory, filteredProducts, setCategories} = useCategories({unfilteredProducts: searchedProducts});
 
   return (
     <Box>
       <ProductSearchBar onSearchChange={setSearchValue} searchValue={searchValue} />
       <Box flex={1} display="flex" flexDirection="row">
-        <Categories categories={categories} onCategorySelect={(selectedCategory) => toggleCategory(selectedCategory)}/>
+        <Categories categories={categories} onCategorySelect={(selectedCategory) => toggleCategory(selectedCategory)} onCategoryClear={() => setCategories([])}/>
         <Box flex={1}>
           <Box overflow="scroll" height="100%">
             <Grid container spacing={2} p={2}>
@@ -28,7 +26,6 @@ export const ShopPage = () => {
                   key={product.id}
                   product={product}
                   onAddToCart={(quantity) => {
-                    console.log("Adding to cart:", product.id, quantity);
                     addToCart(product.id, quantity);
                   }}
                   isLoading={isProductLoading(product.id)}

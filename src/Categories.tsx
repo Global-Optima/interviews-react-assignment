@@ -1,5 +1,7 @@
 import {
   Box,
+  Button,
+  Divider,
   List,
   ListItem,
   ListItemButton,
@@ -22,11 +24,13 @@ const drawerWidth = 180;
 interface CategoriesProps {
   categories: string[];
   onCategorySelect?: (category: string) => void;
+  onCategoryClear?: () => void;
 }
 
 export const Categories = ({
   categories,
   onCategorySelect,
+  onCategoryClear
 }: CategoriesProps) => {
   return (
     <Box minWidth={drawerWidth} sx={{ borderRight: "1px solid grey" }}>
@@ -47,6 +51,8 @@ export const Categories = ({
           </ListItem>
         ))}
       </List>
+      <Divider></Divider>
+    <ListItemButton onClick={() => onCategoryClear?.()} style={{color: 'dodgerblue'}}>Clear All</ListItemButton>
     </Box>
   );
-};
+};  
