@@ -7,17 +7,18 @@ export function useIntersectionObserver(
     const targetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        const target = targetRef.current;
         const observer = new IntersectionObserver(([entry]) => {
             setIsIntersecting(entry.isIntersecting);
         }, options);
 
-        if (targetRef.current) {
-            observer.observe(targetRef.current);
+        if (target) {
+            observer.observe(target);
         }
 
         return () => {
-            if (targetRef.current) {
-                observer.unobserve(targetRef.current);
+            if (target) {
+                observer.unobserve(target);
             }
         };
     }, [options]);

@@ -56,7 +56,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         if (page === 0) {
             fetchProducts();
         }
-    }, [page, searchTerm, category]);
+    }, [page, searchTerm, category, fetchProducts]);
 
     return {
         products,
