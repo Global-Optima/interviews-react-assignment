@@ -1,243 +1,203 @@
-<!--
-Hi! We're happy you opened this file, not everyone does!
-To let us know you did, add a 🚀 emoji next to your name 
-in the How to Run section 😊 
-These will be extra points for you!
--->
+# Multi-Step Checkout Flow
 
-# React Developer Interview Assignment
+**Developer:** Smagulov Dastan
 
-## Introduction
+## Completed Challenges
 
-This is a technical interview exercise for **Gotech**'s Engineering team. In the following sections, you will find a number of challenges that test your React, TypeScript, and frontend development skills. You **DO NOT need to complete 100% of them**: choose the challenges that best demonstrate your expertise and complete them to a high standard.
+✅ **Challenge #4: Multi-Step Checkout Flow** - Built a complete 4-step checkout wizard with all required functionality
 
-⏱️ You have **1 week** to submit your solution. We understand you have other commitments, so work at your own pace. We evaluate based on **code quality, architecture, and problem-solving approach**, not speed.
+## Key Decisions and Trade-Offs
 
-### Deliverables
+### 1. State Management Strategy
 
-Fork this repository and treat it as a real-world project. We'll review your work in one week.
+- **Decision:** Used React's useState with local storage persistence
+- **Trade-off:** Chose simplicity over state libraries (Redux/Zustand) for this focused component
+- **Benefit:** Reduced complexity while maintaining data persistence across page refreshes
 
-### Evaluation Criteria
+### 2. Form Validation Approach
 
-Your submission will be assessed on:
+- **Decision:** Implemented real-time validation with immediate feedback
+- **Trade-off:** Client-side only validation (no server-side validation shown)
+- **Benefit:** Better UX with instant error messages, reduces unnecessary server calls
 
-* **Code Quality** - Clean, readable, maintainable code
-* **Architecture & Design Patterns** - Proper separation of concerns, reusable components
-* **Performance Optimization** - Efficient rendering, proper memoization
-* **TypeScript Usage** - Strong typing, proper interfaces
-* **Project Structure** - Logical organization, scalability
-* **Git Workflow** - Meaningful commits, branch strategy
-* **Testing** (bonus) - Unit tests, integration tests
-* **Documentation** - Clear README, code comments where needed
+### 3. Payment Processing Simulation
 
-#### Using AI Tools:
+- **Decision:** Mock implementation with 50% success rate simulation
+- **Trade-off:** No real payment integration (as per requirements)
+- **Benefit:** Allows testing of both success and failure scenarios
 
-We encourage modern development practices, including AI-assisted coding tools (GitHub Copilot, ChatGPT, etc.). However, **you must understand every line of code you submit**. During the technical interview, you'll be asked to explain your decisions, trade-offs, and implementation details. Use AI as a productivity tool, but ensure the solutions reflect your expertise.
+### 4. Responsive Design
 
-### Let's Get Started
+- **Decision:** Material-UI's responsive grid system with breakpoints
+- **Trade-off:** Some complexity in responsive logic
+- **Benefit:** Consistent experience across all device sizes
 
-Some challenges may be unfamiliar—that's intentional. Pick challenges that match your skill level and complete them thoroughly. We value quality over quantity.
+### 5. Persistence Strategy
 
-⚠️ **Important**: Requirements are intentionally broad to give you creative freedom. Document your assumptions, decisions, and trade-offs. In a real-world scenario, what questions would you ask stakeholders?
+- **Decision:** LocalStorage for cart, shipping, and payment data
+- **Trade-off:** Limited to browser (no cross-device sync)
+- **Benefit:** Data survives page refreshes without backend dependency
 
----   
+### 6. Error Handling
 
-## Problem Domain
+- **Decision:** Comprehensive error states with retry mechanisms
+- **Trade-off:** Additional state management complexity
+- **Benefit:** Robust user experience with clear recovery paths
 
-Build a web application for **TechHub**, gotech's consumer electronics e-commerce platform. Users can browse tech products (laptops, smartphones, accessories, etc.), filter by category, add items to cart, and complete checkout.
+### 7. Component Architecture
 
-**Scope**: Focus on the **customer-facing** application only (no admin panel needed).
+- **Decision:** Separated each step into individual components
+- **Trade-off:** More files but better separation of concerns
+- **Benefit:** Easier maintenance, testing, and future enhancements
 
-**Simplifications**: 
-- No authentication required (single user)
-- No real payment processing
-- Single page application (SPA) is acceptable
+## How to Test Features
 
----
+### Prerequisites
 
-## Challenges
+- Node.js (v14+)
+- React development environment
+- Mock backend server (if testing API calls)
 
-### Challenge #1: Product List with Infinite Scroll ⭐
-
-**Context**: A junior developer started building the product listing page but couldn't implement proper pagination. Currently, the app fetches ALL products at once (`limit=200`), which won't scale.
-
-**Your Tasks**:
-1. Implement **infinite scroll** pagination (load more products as user scrolls)
-2. Refactor the `Products` component for better maintainability
-3. Add proper loading states
-4. Fix the missing `key` prop warning (hint: check Grid vs Card placement)
-5. Handle edge cases (empty states, API errors)
-
-**Evaluation Focus**: 
-- Clean component architecture
-- Proper React hooks usage
-- User experience during loading
-
----
-
-### Challenge #2: Advanced Search & Filtering ⭐⭐
-
-**Context**: The UI has a search bar and category sidebar, but neither is functional.
-
-**Your Tasks**:
-1. Implement **real-time search** that filters products as user types
-2. Connect category buttons to filter products
-3. Allow **combining** search + category filters
-4. Add debouncing to search input (performance optimization)
-5. Update URL query parameters to make filters shareable
-6. Add a "Clear Filters" option
-7. Show active filter indicators
-
-**Bonus**:
-- Add price range filter
-- Add sorting options (price low-to-high, name A-Z, etc.)
-- Show result count
-
-**Evaluation Focus**:
-- State management strategy
-- Performance optimization (debouncing, unnecessary re-renders)
-- UX polish
-
----
-
-### Challenge #3: Performance Optimization ⭐⭐⭐
-
-**Context**: The product list has serious performance issues:
-- Each product renders a `HeavyComponent` (simulating slow components)
-- Cart updates are sluggish
-- Backend has 1000ms latency (realistic for slow APIs)
-
-**Your Tasks**:
-1. **Fix the rendering performance** (hint: memoization, virtualization)
-   - ⚠️ Do NOT remove `HeavyComponent`—optimize around it
-2. **Fix the cart update bug** (line 59: stale closure issue)
-3. Implement **optimistic UI updates** for add/remove cart actions
-4. Prevent unnecessary re-renders
-5. **Provide proof** of performance improvements (screenshots, metrics, profiler data)
-
-**Bonus**:
-- Implement virtual scrolling for large product lists
-- Add request cancellation for outdated searches
-
-**Evaluation Focus**:
-- Understanding of React rendering behavior
-- Profiling and measurement skills
-- Real-world performance optimization techniques
-
----
-
-### Challenge #4: Multi-Step Checkout Flow ⭐⭐⭐
-
-**Context**: Not implemented yet. Build a complete checkout experience.
-
-**Your Tasks**:
-
-Build a **4-step checkout wizard**:
-
-**Step 1: Cart Review**
-- Display cart items with quantities
-- Show subtotal, tax (calculate as 10%), and total
-- Allow editing quantities or removing items
-- Show empty cart state
-
-**Step 2: Shipping Details**
-- Form: Full name, address, city, postal code, phone
-- Delivery time slot selection (Morning, Afternoon, Evening)
-- Form validation with proper error messages
-- Save to local storage (persist on refresh)
-
-**Step 3: Payment Method**
-- Radio selection: Credit Card, PayPal, Cash on Delivery
-- If Credit Card: show card number, expiry, CVV inputs (validation only, no real processing)
-- If PayPal: show mock redirect message
-- Visual payment method icons
-
-**Step 4: Order Confirmation**
-- Summary of: items, shipping address, payment method, total
-- "Place Order" button (calls `/orders` endpoint)
-- Handle success/failure (backend has 50% failure rate)
-- On success: clear cart, show confirmation message
-- On failure: show error, allow retry
-
-**Requirements**:
-- Progress indicator showing current step
-- Back/Next navigation
-- Validate each step before proceeding
-- Responsive design
-- Accessibility (keyboard navigation, ARIA labels)
-
-**Bonus**:
-- Animate step transitions
-- Add order tracking number on success
-- Email preview/summary
-
-**Evaluation Focus**:
-- Form management (controlled vs uncontrolled)
-- State management across steps
-- Validation strategy
-- UX and accessibility
-- Error handling
-
----
-
-## Technical Stack
-
-The project uses:
-- **React 18** + **TypeScript**
-- **Material-UI (MUI)** v5
-- **Vite** (build tool)
-- **MSW** (Mock Service Worker) for API mocking
-- **pnpm** (package manager)
-
-## API Endpoints (Mocked)
-
-All endpoints are mocked with MSW:
-
-- `GET /products?q=search&category=Laptops&page=0&limit=10` - Fetch products
-- `POST /cart` - Add/remove items (1000ms delay)
-- `GET /cart` - Get current cart
-- `POST /orders` - Submit order (50% random success/failure)
-
-## How to Run
-
-<!-- Add your name and 🚀 emoji here if you read the hidden message! -->
+### Setup
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Lint
-pnpm lint
+npm install
+npm start
 ```
 
-## Submission Guidelines
+### Test Scenarios
 
-1. **Fork** this repository
-2. Create a new branch: `solution/your-name`
-3. Commit regularly with clear messages
-4. Update this README with:
-   - Your name
-   - Which challenges you completed
-   - Key decisions and trade-offs
-   - How to test your features
-   - Any assumptions made
-5. **Submit a Pull Request** to the original repo
+#### 1. Empty Cart State
 
----
+- Navigate to checkout with empty cart
+- **Expected:** Empty cart message with "Browse Products" button
 
-## Notes
+#### 2. Cart Step
 
-- Focus on **code quality** over completing all challenges
-- **Document your decisions** in code comments or this README
-- If you skip a challenge, briefly explain why
-- Treat this like production code you'd ship to real users
+- Add items to cart via product pages
+- **Test:**
+  - Quantity adjustment (increase/decrease)
+  - Item removal
+  - Price calculation (subtotal + 10% tax)
+  - Responsive layout at different screen sizes
 
-**Questions?** In a real scenario, you'd ask your team lead. For this assignment, document your assumptions and move forward.
+#### 3. Shipping Step Validation
 
-Good luck! 🚀
+- **Required fields:** Full name, address, city, postal code, phone
+- **Phone validation:** +7 format (Russian phone numbers)
+- **Postal code:** 5-digit US format (accepts 5+4)
+- **Delivery slot:** Morning/Afternoon/Evening selection
+- **Test invalid inputs:** Empty fields, wrong phone format, invalid postal code
+
+#### 4. Payment Step
+
+- **Credit Card:**
+  - Card number formatting (xxxx xxxx xxxx xxxx)
+  - Expiry date auto-format (MM/YY)
+  - CVV validation (3-4 digits)
+- **PayPal:** Mock redirect message
+- **Cash on Delivery:** Info alert
+- **Test:** Switch between methods, validation errors
+
+#### 5. Confirmation Step
+
+- Review all information: items, shipping, payment, total
+- **Order placement:**
+  - Success (50% chance): Clear cart, show confirmation, tracking number
+  - Failure (50% chance): Error message with retry button
+- **Test both flows:** Mock API responses to trigger success/failure
+
+#### 6. Accessibility Testing
+
+- Keyboard navigation (Tab, Enter, Space)
+- Screen reader compatibility (ARIA labels)
+- Color contrast compliance
+- Focus management between steps
+
+#### 7. Persistence Testing
+
+- Refresh page at each step
+- **Expected:** Data preserved via localStorage
+- Clear browser data to test fresh start
+
+#### 8. Responsive Testing
+
+- Test on mobile (320px+), tablet (768px+), desktop (1024px+)
+- **Check:** Layout adjustments, touch targets, readability
+
+### Automated Tests (If Available)
+
+```bash
+npm test
+# Tests should cover:
+# - Validation logic
+# - State updates
+# - Component rendering
+# - Edge cases
+```
+
+## Assumptions Made
+
+### 1. API Integration
+
+- Backend endpoints exist at `/cart` and `/orders`
+- Cart API accepts `{ productId, quantity }` for updates
+- Order API accepts order data and returns success/failure
+- 50% failure rate is simulated server-side
+
+### 2. User Experience
+
+- Users understand +7 phone number format (Russia/Kazakhstan)
+- Tax rate is fixed at 10% (configurable but not user-changeable)
+- Shipping is always free (no shipping cost calculation)
+
+### 3. Business Rules
+
+- Minimum quantity per item is 1
+- No stock validation (assumes infinite inventory)
+- No user authentication required for checkout
+- All prices in USD ($)
+
+### 4. Technical Constraints
+
+- Modern browser support (Chrome, Firefox, Safari, Edge)
+- JavaScript enabled (no progressive enhancement)
+- LocalStorage available (no fallback mechanism)
+- No real payment gateway integration
+
+### 5. Data Formats
+
+- **Phone:** +7XXXXXXXXXX (11 digits total)
+- **Postal code:** 12345 or 12345-6789
+- **Card number:** 12-19 digits with spaces
+- **Expiry date:** MM/YY format
+- **Dates:** ISO format from server
+
+### 6. Security Considerations
+
+- No real credit card processing (validation only)
+- CVV shown as password field but not securely transmitted
+- LocalStorage not encrypted (ok for demo, not production)
+- No PCI DSS compliance needed
+
+## Bonus Features Implemented
+
+✅ **Animated step transitions** - Using Material-UI transitions  
+✅ **Order tracking number** - Generated on successful order  
+✅ **Email preview/summary** - Shown in confirmation step (mock)  
+✅ **Visual payment method icons** - Custom icons for each method  
+✅ **Sticky order summary** - Remains visible while scrolling  
+✅ **Snackbar notifications** - For cart updates and errors
+
+## Future Improvements
+
+- Real payment integration (Stripe, PayPal)
+- Server-side validation for security
+- User authentication and order history
+- Shipping cost calculation based on location
+- Multiple shipping addresses support
+- Discount codes and promotions
+- Order tracking with real carrier integration
+- Email notifications with templates
+- Analytics integration for conversion tracking
+- Progressive Web App features (offline support)
