@@ -125,17 +125,6 @@ npm start
 - Test on mobile (320px+), tablet (768px+), desktop (1024px+)
 - **Check:** Layout adjustments, touch targets, readability
 
-### Automated Tests (If Available)
-
-```bash
-npm test
-# Tests should cover:
-# - Validation logic
-# - State updates
-# - Component rendering
-# - Edge cases
-```
-
 ## Assumptions Made
 
 ### 1. API Integration
