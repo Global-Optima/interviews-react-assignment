@@ -28,6 +28,7 @@ export const Products = ({
   onCartChange: (cart: Cart) => void;
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const rowCount = Math.ceil(products.length / ITEMS_PER_ROW);
 
   useEffect(() => {
     fetch('/products?limit=200')
@@ -35,19 +36,63 @@ export const Products = ({
       .then((data) => setProducts(data.products));
   }, []);
 
-  const addToCart = useCallback(
+  const calculateOptimisticCart = useCallback(
+    (updatedProducts: Product[]): Cart => {
+      const items = updatedProducts.filter((p) => p.itemInCart > 0);
+      const totalItems = items.reduce((sum, p) => sum + p.itemInCart, 0);
+      const totalPrice = items.reduce(
+        (sum, p) => sum + p.price * p.itemInCart,
+        0
+      );
+
+      return { items, totalItems, totalPrice };
+    },
+    []
+  );
+
+  const recalculateOnError = useCallback(
     (productId: number, quantity: number) => {
-      setProducts(
-        products.map((product) => {
+      // Rollback on network error
+      setProducts((currentProducts) =>
+        currentProducts.map((product) => {
           if (product.id === productId) {
             return {
               ...product,
-              loading: true,
+              itemInCart: Math.max(0, (product.itemInCart || 0) - quantity),
+              loading: false,
             };
           }
           return product;
         })
       );
+
+      // Recalculate cart after rollback
+      setProducts((rolledBackProducts) => {
+        const rolledBackCart = calculateOptimisticCart(rolledBackProducts);
+        onCartChange(rolledBackCart);
+        return rolledBackProducts;
+      });
+    },
+    []
+  );
+
+  const addToCart = useCallback(
+    (productId: number, quantity: number) => {
+      const updatedProducts = products.map((product) => {
+        if (product.id === productId) {
+          return {
+            ...product,
+            itemInCart: (product.itemInCart || 0) + quantity,
+            loading: true,
+          };
+        }
+        return product;
+      });
+
+      setProducts(updatedProducts);
+
+      const optimisticCart = calculateOptimisticCart(updatedProducts);
+      onCartChange(optimisticCart);
 
       fetch('/cart', {
         method: 'POST',
@@ -55,31 +100,30 @@ export const Products = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ productId, quantity }),
-      }).then(async (response) => {
-        if (response.ok) {
-          const cart = await response.json();
-
-          setProducts((currentProducts) =>
-            currentProducts.map((product) => {
-              if (product.id === productId) {
-                return {
-                  ...product,
-                  itemInCart: (product.itemInCart || 0) + quantity,
-                  loading: false,
-                };
-              }
-              return product;
-            })
-          );
-
-          onCartChange(cart);
-        }
-      });
+      })
+        .then(async (response) => {
+          if (response.ok) {
+            setProducts((currentProducts) =>
+              currentProducts.map((product) => {
+                if (product.id === productId) {
+                  return {
+                    ...product,
+                    loading: false,
+                  };
+                }
+                return product;
+              })
+            );
+          } else {
+            recalculateOnError(productId, quantity);
+          }
+        })
+        .catch(() => {
+          recalculateOnError(productId, quantity);
+        });
     },
-    [onCartChange, products]
+    [onCartChange, products, calculateOptimisticCart, recalculateOnError]
   );
-
-  const rowCount = Math.ceil(products.length / ITEMS_PER_ROW);
 
   const rowRenderer = ({
     index,
