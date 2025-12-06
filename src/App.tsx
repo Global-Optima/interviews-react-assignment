@@ -10,6 +10,7 @@ import { useUrlState } from './hooks/useUrlState.ts';
 
 function App() {
   const [cart, setCart] = useState<Cart>();
+  const [totalCount, setTotalCount] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useUrlState('q', '', 'replace');
   const [selectedCategory, setSelectedCategory] = useUrlState('category', '');
 
@@ -43,6 +44,7 @@ function App() {
       <FilterBar
         searchTerm={debouncedSearchTerm}
         selectedCategory={selectedCategory}
+        resultCount={totalCount}
         onClearSearch={handleClearSearch}
         onClearCategory={handleClearCategory}
         onClearAll={handleClearAll}
@@ -55,6 +57,7 @@ function App() {
         <Box flex={1} overflow="auto">
           <Products
             onCartChange={onCartChange}
+            onTotalCountChange={setTotalCount}
             searchTerm={debouncedSearchTerm}
             selectedCategory={selectedCategory}
           />

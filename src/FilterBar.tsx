@@ -4,6 +4,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 interface FilterBarProps {
     searchTerm: string;
     selectedCategory: string;
+    resultCount: number | null;
     onClearSearch: () => void;
     onClearCategory: () => void;
     onClearAll: () => void;
@@ -12,13 +13,14 @@ interface FilterBarProps {
 export const FilterBar = ({
     searchTerm,
     selectedCategory,
+    resultCount,
     onClearSearch,
     onClearCategory,
     onClearAll
 }: FilterBarProps) => {
     const hasFilters = searchTerm || selectedCategory;
 
-    if (!hasFilters) {
+    if (!hasFilters && resultCount === null) {
         return null;
     }
 
@@ -32,9 +34,22 @@ export const FilterBar = ({
             bgcolor="grey.100"
             flexWrap="wrap"
         >
-            <Box component="span" color="text.secondary" fontSize="0.875rem">
-                Active filters:
-            </Box>
+            {resultCount !== null && (
+                <Box
+                    component="span"
+                    fontWeight="medium"
+                    fontSize="0.875rem"
+                    mr={2}
+                >
+                    {resultCount} {resultCount === 1 ? 'product' : 'products'}
+                </Box>
+            )}
+
+            {hasFilters && (
+                <Box component="span" color="text.secondary" fontSize="0.875rem">
+                    Active filters:
+                </Box>
+            )}
 
             {searchTerm && (
                 <Chip

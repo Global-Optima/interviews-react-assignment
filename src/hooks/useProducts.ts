@@ -7,6 +7,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [totalCount, setTotalCount] = useState<number | null>(null);
     const limit = 20;
 
     useEffect(() => {
@@ -14,6 +15,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         setPage(0);
         setHasMore(true);
         setError(null);
+        setTotalCount(null);
     }, [searchTerm, category]);
 
     const fetchProducts = useCallback(async () => {
@@ -34,6 +36,8 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
             if (data.products.length < limit) {
                 setHasMore(false);
             }
+
+            setTotalCount(data.total);
 
             setProducts(prev => {
                 if (page === 0) {
@@ -70,6 +74,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         loading,
         hasMore,
         error,
+        totalCount,
         loadMore: fetchProducts,
         setProducts,
         resetError

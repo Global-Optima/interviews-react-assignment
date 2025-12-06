@@ -9,14 +9,16 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 export const Products = ({
   onCartChange,
+  onTotalCountChange,
   searchTerm,
   selectedCategory
 }: {
   onCartChange: (cart: Cart) => void;
+  onTotalCountChange?: (count: number | null) => void;
   searchTerm: string;
   selectedCategory: string;
 }) => {
-  const { products, loading, hasMore, error, loadMore, setProducts, resetError } = useProducts({
+  const { products, loading, hasMore, error, totalCount, loadMore, setProducts, resetError } = useProducts({
     searchTerm,
     category: selectedCategory
   });
@@ -27,6 +29,10 @@ export const Products = ({
       loadMore();
     }
   }, [isIntersecting, hasMore, loading, error, loadMore]);
+
+  useEffect(() => {
+    onTotalCountChange?.(totalCount);
+  }, [totalCount, onTotalCountChange]);
 
   const addToCart = useCallback((productId: number, quantity: number) => {
     setProducts(prev => prev.map(product => {
