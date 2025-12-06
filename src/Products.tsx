@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Grid, Typography, Button, Alert } from '@mui/material';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver';
 import { useProducts, SortOption } from './hooks/useProducts';
 import { ProductCard } from './ProductCard';
@@ -33,6 +33,9 @@ export const Products = ({
   });
   const [targetRef, isIntersecting] = useIntersectionObserver();
 
+  const onCartChangeRef = useRef(onCartChange);
+  onCartChangeRef.current = onCartChange;
+
   useEffect(() => {
     if (isIntersecting && hasMore && !loading && !error) {
       loadMore();
@@ -48,6 +51,7 @@ export const Products = ({
       if (product.id === productId) {
         return {
           ...product,
+          itemInCart: (product.itemInCart || 0) + quantity,
           loading: true,
         };
       }
@@ -60,23 +64,37 @@ export const Products = ({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ productId, quantity }),
-    }).then(async response => {
-      if (response.ok) {
-        const cart = await response.json();
+    })
+      .then(async response => {
+        if (response.ok) {
+          const cart = await response.json();
+          setProducts(prev => prev.map(product => {
+            if (product.id === productId) {
+              return {
+                ...product,
+                loading: false,
+              };
+            }
+            return product;
+          }));
+          onCartChangeRef.current(cart);
+        } else {
+          throw new Error('Failed to update cart');
+        }
+      })
+      .catch(() => {
         setProducts(prev => prev.map(product => {
           if (product.id === productId) {
             return {
               ...product,
-              itemInCart: (product.itemInCart || 0) + quantity,
+              itemInCart: (product.itemInCart || 0) - quantity,
               loading: false,
             };
           }
           return product;
         }));
-        onCartChange(cart);
-      }
-    });
-  }, [setProducts, onCartChange]);
+      });
+  }, [setProducts]);
 
   const handleRetry = useCallback(() => {
     resetError();
