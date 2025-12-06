@@ -3,7 +3,8 @@ import { Cart } from './types.ts';
 import { Box, CssBaseline } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
-import { useState } from 'react';
+import { FilterBar } from './FilterBar.tsx';
+import { useState, useCallback } from 'react';
 import { useDebounce } from './hooks/useDebounce.ts';
 import { useUrlState } from './hooks/useUrlState.ts';
 
@@ -18,6 +19,19 @@ function App() {
     setCart(cart);
   }
 
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+  }, [setSearchTerm]);
+
+  const handleClearCategory = useCallback(() => {
+    setSelectedCategory('');
+  }, [setSelectedCategory]);
+
+  const handleClearAll = useCallback(() => {
+    setSearchTerm('');
+    setSelectedCategory('');
+  }, [setSearchTerm, setSelectedCategory]);
+
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <CssBaseline />
@@ -26,12 +40,19 @@ function App() {
         price={cart?.totalPrice || 0}
         onSearchChange={setSearchTerm}
       />
-      <Box flex={1} display="flex" flexDirection="row">
+      <FilterBar
+        searchTerm={debouncedSearchTerm}
+        selectedCategory={selectedCategory}
+        onClearSearch={handleClearSearch}
+        onClearCategory={handleClearCategory}
+        onClearAll={handleClearAll}
+      />
+      <Box flex={1} display="flex" flexDirection="row" overflow="hidden">
         <Categories
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
-        <Box flex={1}>
+        <Box flex={1} overflow="auto">
           <Products
             onCartChange={onCartChange}
             searchTerm={debouncedSearchTerm}
