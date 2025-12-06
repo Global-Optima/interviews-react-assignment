@@ -4,6 +4,7 @@ import { Product } from '../types';
 export function useProducts({ searchTerm, category }: { searchTerm: string; category: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const limit = 20;
@@ -12,6 +13,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         setProducts([]);
         setPage(0);
         setHasMore(true);
+        setError(null);
     }, [searchTerm, category]);
 
     const fetchProducts = useCallback(async () => {
@@ -45,8 +47,9 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
             });
 
             setPage(prev => prev + 1);
-        } catch (error) {
-            console.error('Error fetching products:', error);
+        } catch (err) {
+            console.error('Error fetching products:', err);
+            setError('Failed to load products. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -58,11 +61,17 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         }
     }, [page, searchTerm, category, fetchProducts]);
 
+    const resetError = useCallback(() => {
+        setError(null);
+    }, []);
+
     return {
         products,
         loading,
         hasMore,
+        error,
         loadMore: fetchProducts,
-        setProducts
+        setProducts,
+        resetError
     };
 }

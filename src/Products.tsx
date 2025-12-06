@@ -1,9 +1,11 @@
-import { Box, CircularProgress, Grid } from '@mui/material';
+import { Box, CircularProgress, Grid, Typography, Button, Alert } from '@mui/material';
 import { useEffect, useCallback } from 'react';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver';
 import { useProducts } from './hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { Cart } from './types';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 export const Products = ({
   onCartChange,
@@ -14,17 +16,17 @@ export const Products = ({
   searchTerm: string;
   selectedCategory: string;
 }) => {
-  const { products, loading, hasMore, loadMore, setProducts } = useProducts({
+  const { products, loading, hasMore, error, loadMore, setProducts, resetError } = useProducts({
     searchTerm,
     category: selectedCategory
   });
   const [targetRef, isIntersecting] = useIntersectionObserver();
 
   useEffect(() => {
-    if (isIntersecting && hasMore && !loading) {
+    if (isIntersecting && hasMore && !loading && !error) {
       loadMore();
     }
-  }, [isIntersecting, hasMore, loading, loadMore]);
+  }, [isIntersecting, hasMore, loading, error, loadMore]);
 
   const addToCart = useCallback((productId: number, quantity: number) => {
     setProducts(prev => prev.map(product => {
@@ -61,21 +63,94 @@ export const Products = ({
     });
   }, [setProducts, onCartChange]);
 
+  const handleRetry = useCallback(() => {
+    resetError();
+    loadMore();
+  }, [resetError, loadMore]);
+
+  if (error && products.length === 0) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+        p={4}
+      >
+        <Alert
+          severity="error"
+          sx={{ mb: 2, maxWidth: 400 }}
+        >
+          {error}
+        </Alert>
+        <Button
+          variant="contained"
+          startIcon={<RefreshIcon />}
+          onClick={handleRetry}
+        >
+          Try Again
+        </Button>
+      </Box>
+    );
+  }
+
+  const showEmptyState = !loading && products.length === 0 && !error;
+
   return (
     <Box overflow="auto" height="100%">
-      <Grid container spacing={2} p={2}>
-        {products.map(product => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onAddToCart={addToCart}
-          />
-        ))}
-      </Grid>
-      {loading && (
-        <Box display="flex" justifyContent="center" p={2}>
-          <CircularProgress />
+      {showEmptyState ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+          p={4}
+        >
+          <SearchOffIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h5" color="text.secondary" gutterBottom>
+            No products found
+          </Typography>
+          <Typography variant="body1" color="text.secondary" textAlign="center">
+            {searchTerm || selectedCategory
+              ? "Try adjusting your search or filter criteria"
+              : "No products are available at the moment"}
+          </Typography>
         </Box>
+      ) : (
+        <>
+          <Grid container spacing={2} p={2}>
+            {products.map(product => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+              />
+            ))}
+          </Grid>
+
+          {error && products.length > 0 && (
+            <Box display="flex" flexDirection="column" alignItems="center" p={2}>
+              <Alert severity="error" sx={{ mb: 1 }}>
+                {error}
+              </Alert>
+              <Button
+                size="small"
+                startIcon={<RefreshIcon />}
+                onClick={handleRetry}
+              >
+                Retry
+              </Button>
+            </Box>
+          )}
+
+          {loading && (
+            <Box display="flex" justifyContent="center" p={2}>
+              <CircularProgress />
+            </Box>
+          )}
+        </>
       )}
       <div ref={targetRef} style={{ height: 20 }} />
     </Box>
