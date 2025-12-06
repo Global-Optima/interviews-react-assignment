@@ -5,27 +5,45 @@ import { ReactNode } from 'react';
 interface FilterBarProps {
     searchTerm: string;
     selectedCategory: string;
+    minPrice: number | null;
+    maxPrice: number | null;
     resultCount: number | null;
     children?: ReactNode;
     onClearSearch: () => void;
     onClearCategory: () => void;
+    onClearPriceRange: () => void;
     onClearAll: () => void;
 }
 
 export const FilterBar = ({
     searchTerm,
     selectedCategory,
+    minPrice,
+    maxPrice,
     resultCount,
     children,
     onClearSearch,
     onClearCategory,
+    onClearPriceRange,
     onClearAll
 }: FilterBarProps) => {
-    const hasFilters = searchTerm || selectedCategory;
+    const hasPriceFilter = minPrice !== null || maxPrice !== null;
+    const hasFilters = searchTerm || selectedCategory || hasPriceFilter;
 
     if (!hasFilters && resultCount === null) {
         return null;
     }
+
+    const formatPriceLabel = () => {
+        if (minPrice !== null && maxPrice !== null) {
+            return `Price: $${minPrice} - $${maxPrice}`;
+        } else if (minPrice !== null) {
+            return `Price: $${minPrice}+`;
+        } else if (maxPrice !== null) {
+            return `Price: up to $${maxPrice}`;
+        }
+        return '';
+    };
 
     return (
         <Box
@@ -69,6 +87,16 @@ export const FilterBar = ({
                     label={`Category: ${selectedCategory}`}
                     size="small"
                     onDelete={onClearCategory}
+                    color="primary"
+                    variant="outlined"
+                />
+            )}
+
+            {hasPriceFilter && (
+                <Chip
+                    label={formatPriceLabel()}
+                    size="small"
+                    onDelete={onClearPriceRange}
                     color="primary"
                     variant="outlined"
                 />

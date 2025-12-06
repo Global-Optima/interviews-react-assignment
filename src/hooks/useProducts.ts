@@ -3,7 +3,15 @@ import { Product } from '../types';
 
 export type SortOption = '' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
-export function useProducts({ searchTerm, category, sortBy = '' }: { searchTerm: string; category: string; sortBy?: SortOption }) {
+interface UseProductsParams {
+    searchTerm: string;
+    category: string;
+    sortBy?: SortOption;
+    minPrice?: number | null;
+    maxPrice?: number | null;
+}
+
+export function useProducts({ searchTerm, category, sortBy = '', minPrice = null, maxPrice = null }: UseProductsParams) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -18,7 +26,7 @@ export function useProducts({ searchTerm, category, sortBy = '' }: { searchTerm:
         setHasMore(true);
         setError(null);
         setTotalCount(null);
-    }, [searchTerm, category, sortBy]);
+    }, [searchTerm, category, sortBy, minPrice, maxPrice]);
 
     const fetchProducts = useCallback(async () => {
         if (loading || !hasMore) return;
@@ -32,6 +40,13 @@ export function useProducts({ searchTerm, category, sortBy = '' }: { searchTerm:
                 category: category,
                 sortBy: sortBy,
             });
+
+            if (minPrice !== null) {
+                queryParams.set('minPrice', minPrice.toString());
+            }
+            if (maxPrice !== null) {
+                queryParams.set('maxPrice', maxPrice.toString());
+            }
 
             const response = await fetch(`/products?${queryParams.toString()}`);
             const data = await response.json();
@@ -60,13 +75,13 @@ export function useProducts({ searchTerm, category, sortBy = '' }: { searchTerm:
         } finally {
             setLoading(false);
         }
-    }, [page, loading, hasMore, searchTerm, category, sortBy]);
+    }, [page, loading, hasMore, searchTerm, category, sortBy, minPrice, maxPrice]);
 
     useEffect(() => {
         if (page === 0) {
             fetchProducts();
         }
-    }, [page, searchTerm, category, sortBy, fetchProducts]);
+    }, [page, searchTerm, category, sortBy, minPrice, maxPrice, fetchProducts]);
 
     const resetError = useCallback(() => {
         setError(null);

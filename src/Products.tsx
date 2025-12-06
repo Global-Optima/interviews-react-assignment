@@ -12,18 +12,24 @@ export const Products = ({
   onTotalCountChange,
   searchTerm,
   selectedCategory,
-  sortBy = ''
+  sortBy = '',
+  minPrice = null,
+  maxPrice = null
 }: {
   onCartChange: (cart: Cart) => void;
   onTotalCountChange?: (count: number | null) => void;
   searchTerm: string;
   selectedCategory: string;
   sortBy?: SortOption;
+  minPrice?: number | null;
+  maxPrice?: number | null;
 }) => {
   const { products, loading, hasMore, error, totalCount, loadMore, setProducts, resetError } = useProducts({
     searchTerm,
     category: selectedCategory,
-    sortBy
+    sortBy,
+    minPrice,
+    maxPrice
   });
   const [targetRef, isIntersecting] = useIntersectionObserver();
 

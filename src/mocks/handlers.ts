@@ -56,6 +56,8 @@ export const handlers = [
     const searchQuery = url.searchParams.get('q');
     const category = url.searchParams.get('category');
     const sortBy = url.searchParams.get('sortBy') || '';
+    const minPrice = url.searchParams.get('minPrice');
+    const maxPrice = url.searchParams.get('maxPrice');
     const page = url.searchParams.get('page') || '0';
     const limit = url.searchParams.get('limit') || '10';
 
@@ -64,6 +66,12 @@ export const handlers = [
         return false;
       }
       if (category && product.category !== category) {
+        return false;
+      }
+      if (minPrice && product.price < parseFloat(minPrice)) {
+        return false;
+      }
+      if (maxPrice && product.price > parseFloat(maxPrice)) {
         return false;
       }
       return true;
