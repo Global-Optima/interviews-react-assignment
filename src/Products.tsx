@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Grid, Typography, Button, Alert } from '@mui/material';
 import { useEffect, useCallback } from 'react';
 import { useIntersectionObserver } from './hooks/useIntersectionObserver';
-import { useProducts } from './hooks/useProducts';
+import { useProducts, SortOption } from './hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { Cart } from './types';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
@@ -11,16 +11,19 @@ export const Products = ({
   onCartChange,
   onTotalCountChange,
   searchTerm,
-  selectedCategory
+  selectedCategory,
+  sortBy = ''
 }: {
   onCartChange: (cart: Cart) => void;
   onTotalCountChange?: (count: number | null) => void;
   searchTerm: string;
   selectedCategory: string;
+  sortBy?: SortOption;
 }) => {
   const { products, loading, hasMore, error, totalCount, loadMore, setProducts, resetError } = useProducts({
     searchTerm,
-    category: selectedCategory
+    category: selectedCategory,
+    sortBy
   });
   const [targetRef, isIntersecting] = useIntersectionObserver();
 

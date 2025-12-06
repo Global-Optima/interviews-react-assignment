@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Product } from '../types';
 
-export function useProducts({ searchTerm, category }: { searchTerm: string; category: string }) {
+export type SortOption = '' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
+
+export function useProducts({ searchTerm, category, sortBy = '' }: { searchTerm: string; category: string; sortBy?: SortOption }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -16,7 +18,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         setHasMore(true);
         setError(null);
         setTotalCount(null);
-    }, [searchTerm, category]);
+    }, [searchTerm, category, sortBy]);
 
     const fetchProducts = useCallback(async () => {
         if (loading || !hasMore) return;
@@ -28,6 +30,7 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
                 page: page.toString(),
                 q: searchTerm,
                 category: category,
+                sortBy: sortBy,
             });
 
             const response = await fetch(`/products?${queryParams.toString()}`);
@@ -57,13 +60,13 @@ export function useProducts({ searchTerm, category }: { searchTerm: string; cate
         } finally {
             setLoading(false);
         }
-    }, [page, loading, hasMore, searchTerm, category]);
+    }, [page, loading, hasMore, searchTerm, category, sortBy]);
 
     useEffect(() => {
         if (page === 0) {
             fetchProducts();
         }
-    }, [page, searchTerm, category, fetchProducts]);
+    }, [page, searchTerm, category, sortBy, fetchProducts]);
 
     const resetError = useCallback(() => {
         setError(null);

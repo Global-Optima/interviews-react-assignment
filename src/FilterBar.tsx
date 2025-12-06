@@ -1,10 +1,12 @@
 import { Box, Chip, Button } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import { ReactNode } from 'react';
 
 interface FilterBarProps {
     searchTerm: string;
     selectedCategory: string;
     resultCount: number | null;
+    children?: ReactNode;
     onClearSearch: () => void;
     onClearCategory: () => void;
     onClearAll: () => void;
@@ -14,6 +16,7 @@ export const FilterBar = ({
     searchTerm,
     selectedCategory,
     resultCount,
+    children,
     onClearSearch,
     onClearCategory,
     onClearAll
@@ -72,6 +75,8 @@ export const FilterBar = ({
             )}
 
             <Box flexGrow={1} />
+
+            {children}
 
             <Button
                 size="small"

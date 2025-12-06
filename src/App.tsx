@@ -4,15 +4,18 @@ import { Box, CssBaseline } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
 import { FilterBar } from './FilterBar.tsx';
+import { SortSelect } from './SortSelect.tsx';
 import { useState, useCallback } from 'react';
 import { useDebounce } from './hooks/useDebounce.ts';
 import { useUrlState } from './hooks/useUrlState.ts';
+import { SortOption } from './hooks/useProducts.ts';
 
 function App() {
   const [cart, setCart] = useState<Cart>();
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useUrlState('q', '', 'replace');
   const [selectedCategory, setSelectedCategory] = useUrlState('category', '');
+  const [sortBy, setSortBy] = useUrlState('sortBy', '');
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -31,7 +34,8 @@ function App() {
   const handleClearAll = useCallback(() => {
     setSearchTerm('');
     setSelectedCategory('');
-  }, [setSearchTerm, setSelectedCategory]);
+    setSortBy('');
+  }, [setSearchTerm, setSelectedCategory, setSortBy]);
 
   return (
     <Box height="100vh" display="flex" flexDirection="column">
@@ -48,7 +52,9 @@ function App() {
         onClearSearch={handleClearSearch}
         onClearCategory={handleClearCategory}
         onClearAll={handleClearAll}
-      />
+      >
+        <SortSelect value={sortBy as SortOption} onChange={setSortBy} />
+      </FilterBar>
       <Box flex={1} display="flex" flexDirection="row" overflow="hidden">
         <Categories
           selectedCategory={selectedCategory}
@@ -60,6 +66,7 @@ function App() {
             onTotalCountChange={setTotalCount}
             searchTerm={debouncedSearchTerm}
             selectedCategory={selectedCategory}
+            sortBy={sortBy as SortOption}
           />
         </Box>
       </Box>

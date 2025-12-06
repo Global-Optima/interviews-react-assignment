@@ -52,14 +52,14 @@ export const handlers = [
     // Construct a URL instance out of the intercepted request.
     const url = new URL(request.url);
 
-    // Read the "id" URL query parameter using the "URLSearchParams" API.
-    // Given "/product?id=1", "productId" will equal "1".
+    // Read the URL query parameters
     const searchQuery = url.searchParams.get('q');
     const category = url.searchParams.get('category');
+    const sortBy = url.searchParams.get('sortBy') || '';
     const page = url.searchParams.get('page') || '0';
     const limit = url.searchParams.get('limit') || '10';
 
-    const filteredProducts = products.filter((product) => {
+    let filteredProducts = products.filter((product) => {
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
@@ -68,6 +68,25 @@ export const handlers = [
       }
       return true;
     });
+
+    // Apply sorting
+    if (sortBy) {
+      filteredProducts = [...filteredProducts].sort((a, b) => {
+        switch (sortBy) {
+          case 'price-asc':
+            return a.price - b.price;
+          case 'price-desc':
+            return b.price - a.price;
+          case 'name-asc':
+            return a.name.localeCompare(b.name);
+          case 'name-desc':
+            return b.name.localeCompare(a.name);
+          default:
+            return 0;
+        }
+      });
+    }
+
     const realPage = parseInt(page, 10) || 0;
     const realLimit = parseInt(limit, 10) || 10;
     const pageList = filteredProducts.slice(realPage * realLimit, (realPage + 1) * realLimit);
