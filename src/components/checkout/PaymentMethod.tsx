@@ -7,6 +7,7 @@ import {
   Alert,
 } from '@mui/material';
 import { CreditCard, AccountBalance, LocalAtm } from '@mui/icons-material';
+import { formatCardNumber, formatExpiry } from '../../utils/utils';
 
 interface PaymentData {
   method: string;
@@ -21,46 +22,32 @@ interface PaymentMethodProps {
   onPaymentChange: (field: keyof PaymentData, value: string) => void;
 }
 
+const paymentMethods = [
+  {
+    value: 'credit_card',
+    label: 'Credit Card',
+    icon: <CreditCard sx={{ fontSize: 32 }} />,
+    description: 'Pay securely with your credit card',
+  },
+  {
+    value: 'paypal',
+    label: 'PayPal',
+    icon: <AccountBalance sx={{ fontSize: 32 }} />,
+    description: 'Fast & secure PayPal payment',
+  },
+  {
+    value: 'cash',
+    label: 'Cash on Delivery',
+    icon: <LocalAtm sx={{ fontSize: 32 }} />,
+    description: 'Pay when you receive your order',
+  },
+];
+
 export function PaymentMethod({
   paymentData,
   paymentErrors,
   onPaymentChange,
 }: PaymentMethodProps) {
-  const paymentMethods = [
-    {
-      value: 'credit_card',
-      label: 'Credit Card',
-      icon: <CreditCard sx={{ fontSize: 32 }} />,
-      description: 'Pay securely with your credit card',
-    },
-    {
-      value: 'paypal',
-      label: 'PayPal',
-      icon: <AccountBalance sx={{ fontSize: 32 }} />,
-      description: 'Fast & secure PayPal payment',
-    },
-    {
-      value: 'cash',
-      label: 'Cash on Delivery',
-      icon: <LocalAtm sx={{ fontSize: 32 }} />,
-      description: 'Pay when you receive your order',
-    },
-  ];
-
-  const formatCardNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    const chunks = cleaned.match(/.{1,4}/g) || [];
-    return chunks.join(' ').substring(0, 19); // Max 16 digits + 3 spaces
-  };
-
-  const formatExpiry = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length >= 2) {
-      return cleaned.substring(0, 2) + '/' + cleaned.substring(2, 4);
-    }
-    return cleaned;
-  };
-
   const handleCardNumberChange = (value: string) => {
     const formatted = formatCardNumber(value);
     onPaymentChange('cardNumber', formatted);

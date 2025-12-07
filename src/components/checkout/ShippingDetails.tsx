@@ -15,17 +15,17 @@ interface ShippingDetailsProps {
   onShippingChange: (field: keyof ShippingData, value: string) => void;
 }
 
+const deliverySlots = [
+  { value: 'morning', label: 'Morning (8 AM - 12 PM)' },
+  { value: 'afternoon', label: 'Afternoon (12 PM - 5 PM)' },
+  { value: 'evening', label: 'Evening (5 PM - 9 PM)' },
+];
+
 export function ShippingDetails({
   shippingData,
   shippingErrors,
   onShippingChange,
 }: ShippingDetailsProps) {
-  const deliverySlots = [
-    { value: 'morning', label: 'Morning (8 AM - 12 PM)' },
-    { value: 'afternoon', label: 'Afternoon (12 PM - 5 PM)' },
-    { value: 'evening', label: 'Evening (5 PM - 9 PM)' },
-  ];
-
   return (
     <Box>
       <Typography variant='h5' gutterBottom sx={{ mb: 3 }}>

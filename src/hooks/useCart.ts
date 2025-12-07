@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Cart, Product } from '../types/types';
-import { calculateOptimisticCart } from '../utils/cartUtils';
+import { calculateOptimisticCart } from '../utils/utils';
 
 export function useCart() {
   const [cart, setCart] = useState<Cart>({

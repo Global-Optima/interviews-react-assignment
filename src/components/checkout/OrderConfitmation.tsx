@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { Cart } from '../../types/types';
 import { SetCart, SetProducts } from '../../hooks/useCart';
+import { calculateSubtotal, calculateTotal } from '../../utils/utils';
 
 interface ShippingData {
   fullName: string;
@@ -45,9 +46,7 @@ interface OrderConfirmationProps {
   setProducts: SetProducts;
   shippingData: ShippingData;
   paymentData: PaymentData;
-  calculateSubtotal: () => number;
   calculateTax: (subtotal: number) => number;
-  calculateTotal: () => number;
   onOrderSuccess: () => void;
 }
 
@@ -57,9 +56,7 @@ export function OrderConfirmation({
   setProducts,
   shippingData,
   paymentData,
-  calculateSubtotal,
   calculateTax,
-  calculateTotal,
   onOrderSuccess,
 }: OrderConfirmationProps) {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -120,7 +117,7 @@ export function OrderConfirmation({
         items: cart,
         shipping: shippingData,
         payment: { method: paymentData.method },
-        total: calculateTotal(),
+        total: calculateTotal(cart),
       };
 
       const response = await fetch('/orders', {
@@ -179,9 +176,9 @@ export function OrderConfirmation({
     setErrorMessage('');
   };
 
-  const subtotal = calculateSubtotal();
+  const subtotal = calculateSubtotal(cart);
   const tax = calculateTax(subtotal);
-  const total = calculateTotal();
+  const total = calculateTotal(cart);
   const paymentMethod = getPaymentMethodDisplay();
 
   if (orderStatus === 'success') {
