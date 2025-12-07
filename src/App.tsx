@@ -17,13 +17,10 @@ function App() {
     <Box height="100vh" display="flex" flexDirection="column">
       <CssBaseline/>
       <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-      <Box flex={1} display="flex" flexDirection="row">
+      <Box flex={1} display="flex" minHeight={0} flexDirection="row">
         <Categories/>
-        <Box flex={1}>
-          <Products onCartChange={onCartChange}/>
-        </Box>
+        <Products onCartChange={onCartChange}/>
       </Box>
-
     </Box>
   );
 }
