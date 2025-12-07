@@ -5,7 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkout } from '../components/Checkout';
+import { Checkout } from '../components/checkout/Checkout';
 import { Cart } from '../types/types';
 import {
   AddToCart,
