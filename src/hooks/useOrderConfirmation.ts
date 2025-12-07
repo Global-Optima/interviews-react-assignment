@@ -1,4 +1,4 @@
-import {  useState } from 'react';
+import { useState } from 'react';
 import { SetCart } from './useCart';
 
 export function useOrderConfirmation(setCart: SetCart) {

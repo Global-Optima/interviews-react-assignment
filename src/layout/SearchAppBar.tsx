@@ -5,9 +5,14 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkout } from './Checkout';
-import { Cart } from './types';
-import { AddToCart, RemoveFromCart, SetCart, SetProducts } from './useCart';
+import { Checkout } from '../components/Checkout';
+import { Cart } from '../types/types';
+import {
+  AddToCart,
+  RemoveFromCart,
+  SetCart,
+  SetProducts,
+} from '../hooks/useCart';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',

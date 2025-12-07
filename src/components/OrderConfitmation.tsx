@@ -22,8 +22,8 @@ import {
   AccountBalance,
   LocalAtm,
 } from '@mui/icons-material';
-import { Cart } from './types';
-import { SetCart, SetProducts } from './useCart';
+import { Cart } from '../types/types';
+import { SetCart, SetProducts } from '../hooks/useCart';
 
 interface ShippingData {
   fullName: string;

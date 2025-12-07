@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { Box, Grid } from '@mui/material';
 import { List, AutoSizer } from 'react-virtualized';
 import { ProductCard } from './ProductCard';
-import { Product } from './types';
-import { AddToCart, SetProducts } from './useCart';
+import { Product } from '../types/types';
+import { AddToCart, SetProducts } from '../hooks/useCart';
 
 const ITEMS_PER_ROW = 3;
 const ROW_HEIGHT = 320;

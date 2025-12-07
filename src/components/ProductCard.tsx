@@ -12,8 +12,8 @@ import {
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
-import { Product } from './types.ts';
-import { AddToCart } from './useCart.ts';
+import { Product } from '../types/types.ts';
+import { AddToCart } from '../hooks/useCart.ts';
 
 export const ProductCard = memo(
   ({ product, addToCart }: { product: Product; addToCart: AddToCart }) => (

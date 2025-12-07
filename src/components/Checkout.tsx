@@ -31,14 +31,19 @@ import {
 } from '@mui/icons-material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
-import { Cart } from './types';
-import { AddToCart, RemoveFromCart, SetCart, SetProducts } from './useCart';
+import { Cart } from '../types/types';
+import {
+  AddToCart,
+  RemoveFromCart,
+  SetCart,
+  SetProducts,
+} from '../hooks/useCart';
 import { ShippingDetails } from './ShippingDetails';
-import { useShippingDetails } from './useShippingDetails';
+import { useShippingDetails } from '../hooks/useShippingDetails';
 import { PaymentMethod } from './PaymentMethod';
-import { usePaymentMethod } from './usePaymentMethod';
+import { usePaymentMethod } from '../hooks/usePaymentMethod';
 import { OrderConfirmation } from './OrderConfitmation';
-import { useOrderConfirmation } from './useOrderConfirmation';
+import { useOrderConfirmation } from '../hooks/useOrderConfirmation';
 
 const steps = [
   'Cart Review',

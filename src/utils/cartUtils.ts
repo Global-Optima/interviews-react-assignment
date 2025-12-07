@@ -1,4 +1,4 @@
-import { Cart, Product } from './types';
+import { Cart, Product } from './types/types';
 
 export const calculateOptimisticCart = (updatedProducts: Product[]): Cart => {
   const items = updatedProducts.filter((p) => p.itemInCart > 0);
