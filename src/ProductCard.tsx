@@ -12,16 +12,11 @@ import {
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { HeavyComponent } from './HeavyComponent.tsx';
-import { Product } from './Products.tsx';
+import { Product } from './types.ts';
+import { AddToCart } from './useCart.ts';
 
 export const ProductCard = memo(
-  ({
-    product,
-    addToCart,
-  }: {
-    product: Product;
-    addToCart: (productId: number, quantity: number) => void;
-  }) => (
+  ({ product, addToCart }: { product: Product; addToCart: AddToCart }) => (
     <Box p={1}>
       {/* Do not remove this */}
       <HeavyComponent />

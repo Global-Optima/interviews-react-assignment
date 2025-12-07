@@ -5,8 +5,9 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge } from '@mui/material';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { Checkout } from './Checkout';
+import { Cart } from './types';
+import { AddToCart, RemoveFromCart } from './useCart';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -51,39 +52,52 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function SearchAppBar({ quantity, price }: { quantity: number, price: number }) {
+export default function SearchAppBar({
+  price,
+  cart,
+  addToCart,
+  removeFromCart,
+}: {
+  price: number;
+  cart: Cart;
+  addToCart: AddToCart;
+  removeFromCart: RemoveFromCart;
+}) {
   return (
     <Box>
-      <AppBar position="relative">
+      <AppBar position='relative'>
         <Toolbar>
           <Typography
-            variant="h6"
+            variant='h6'
             noWrap
-            component="div"
+            component='div'
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
             TechHub
           </Typography>
           <Search>
             <SearchIconWrapper>
-              <SearchIcon/>
+              <SearchIcon />
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search…"
+              placeholder='Search…'
               inputProps={{ 'aria-label': 'search' }}
             />
           </Search>
-          <Box display="flex" flexDirection="row" mx={2}>
-            <Typography variant="h6" noWrap component="div" mr={2}>
+          <Box display='flex' flexDirection='row' mx={2}>
+            <Typography variant='h6' noWrap component='div' mr={2}>
               Total:
             </Typography>
-            <Typography variant="h6" noWrap component="div">
+            <Typography variant='h6' noWrap component='div'>
               $ {(price || 0).toFixed(2)}
             </Typography>
           </Box>
-          <Badge badgeContent={quantity || 0} color="secondary">
-            <ShoppingCartIcon/>
-          </Badge>
+
+          <Checkout
+            cart={cart}
+            addToCart={addToCart}
+            removeFromCart={removeFromCart}
+          />
         </Toolbar>
       </AppBar>
     </Box>
