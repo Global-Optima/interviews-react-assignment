@@ -33,6 +33,8 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { Cart } from './types';
 import { AddToCart, RemoveFromCart } from './useCart';
+import { ShippingDetails } from './ShippingDetails';
+import { useShippingDetails } from './useShippingDetails';
 
 const steps = [
   'Cart Review',
@@ -51,6 +53,13 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
   const [open, setOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
+  const {
+    shippingData,
+    shippingErrors,
+    handleShippingChange,
+    validateShippingForm,
+  } = useShippingDetails();
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -59,12 +68,14 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
 
   const handleNext = () => {
     if (activeStep === 0 && cart.items.length === 0) return;
-    if (activeStep === steps.length - 1) {
-      // Place order logic
-      handleClose();
-    } else {
-      setActiveStep((prev) => prev + 1);
+
+    if (activeStep === 1) {
+      if (!validateShippingForm()) {
+        return;
+      }
     }
+
+    setActiveStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
@@ -233,10 +244,11 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
         return <CartReview />;
       case 1:
         return (
-          <Box>
-            <Typography variant='h5'>Shipping Details</Typography>
-            <Typography color='text.secondary'>Step 2 - Coming next</Typography>
-          </Box>
+          <ShippingDetails
+            shippingData={shippingData}
+            shippingErrors={shippingErrors}
+            onShippingChange={handleShippingChange}
+          />
         );
       case 2:
         return (
