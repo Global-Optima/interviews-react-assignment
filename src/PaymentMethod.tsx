@@ -263,5 +263,3 @@ export function PaymentMethod({
     </Box>
   );
 }
-
-export default PaymentMethod;

@@ -177,5 +177,3 @@ export function ShippingDetails({
     </Box>
   );
 }
-
-export default ShippingDetails;

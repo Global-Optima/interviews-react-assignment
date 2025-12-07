@@ -5,14 +5,16 @@ import { Products } from './Products.tsx';
 import { useCart } from './useCart.ts';
 
 function App() {
-  const { cart, products, setProducts, addToCart, removeFromCart } = useCart();
+  const { cart, products, setProducts, setCart, addToCart, removeFromCart } =
+    useCart();
 
   return (
     <Box height='100vh' display='flex' flexDirection='column'>
       <CssBaseline />
       <SearchAppBar
-        price={cart?.totalPrice || 0}
         cart={cart}
+        setCart={setCart}
+        setProducts={setProducts}
         addToCart={addToCart}
         removeFromCart={removeFromCart}
       />

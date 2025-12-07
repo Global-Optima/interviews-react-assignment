@@ -32,11 +32,13 @@ import {
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { Cart } from './types';
-import { AddToCart, RemoveFromCart } from './useCart';
+import { AddToCart, RemoveFromCart, SetCart, SetProducts } from './useCart';
 import { ShippingDetails } from './ShippingDetails';
 import { useShippingDetails } from './useShippingDetails';
 import { PaymentMethod } from './PaymentMethod';
 import { usePaymentMethod } from './usePaymentMethod';
+import { OrderConfirmation } from './OrderConfitmation';
+import { useOrderConfirmation } from './useOrderConfirmation';
 
 const steps = [
   'Cart Review',
@@ -47,11 +49,19 @@ const steps = [
 
 interface CheckoutProps {
   cart: Cart;
+  setCart: SetCart;
+  setProducts: SetProducts;
   addToCart: AddToCart;
   removeFromCart: RemoveFromCart;
 }
 
-export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
+export function Checkout({
+  cart,
+  setCart,
+  setProducts,
+  addToCart,
+  removeFromCart,
+}: CheckoutProps) {
   const [open, setOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -68,6 +78,8 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
     handlePaymentChange,
     validatePaymentForm,
   } = usePaymentMethod();
+
+  const { handleOrderSuccess } = useOrderConfirmation(setCart);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -275,10 +287,17 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
         );
       case 3:
         return (
-          <Box>
-            <Typography variant='h5'>Order Confirmation</Typography>
-            <Typography color='text.secondary'>Step 4 - Coming next</Typography>
-          </Box>
+          <OrderConfirmation
+            cart={cart}
+            setCart={setCart}
+            setProducts={setProducts}
+            shippingData={shippingData}
+            paymentData={paymentData}
+            calculateSubtotal={calculateSubtotal}
+            calculateTax={calculateTax}
+            calculateTotal={calculateTotal}
+            onOrderSuccess={handleOrderSuccess}
+          />
         );
       default:
         return null;
@@ -336,7 +355,6 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
             <Typography variant='h3' align='center' gutterBottom sx={{ mb: 4 }}>
               Checkout
             </Typography>
-
             <Stepper activeStep={activeStep} sx={{ mb: 4 }} alternativeLabel>
               {steps.map((label, index) => (
                 <Step key={label}>
@@ -364,31 +382,32 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
                 </Step>
               ))}
             </Stepper>
-
             <Card sx={{ minHeight: 400 }}>
               <CardContent sx={{ p: 4 }}>{renderStepContent()}</CardContent>
             </Card>
 
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}
-            >
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant='outlined'
-                size='large'
+            {activeStep < 3 && (
+              <Box
+                sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}
               >
-                Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                variant='contained'
-                size='large'
-                disabled={activeStep === 0 && cart.items.length === 0}
-              >
-                {activeStep === steps.length - 1 ? 'Place Order' : 'Next'}
-              </Button>
-            </Box>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  variant='outlined'
+                  size='large'
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  variant='contained'
+                  size='large'
+                  disabled={activeStep === 0 && cart.items.length === 0}
+                >
+                  Next
+                </Button>
+              </Box>
+            )}
           </DialogContent>
         </Box>
       </Dialog>

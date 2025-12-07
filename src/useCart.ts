@@ -114,6 +114,7 @@ export function useCart() {
     cart,
     products,
     setProducts,
+    setCart,
     addToCart,
     removeFromCart,
   };
@@ -123,3 +124,4 @@ export type UseCartReturn = ReturnType<typeof useCart>;
 export type AddToCart = UseCartReturn['addToCart'];
 export type RemoveFromCart = UseCartReturn['removeFromCart'];
 export type SetProducts = UseCartReturn['setProducts'];
+export type SetCart = UseCartReturn['setCart'];
