@@ -48,14 +48,7 @@ export function useShippingDetails() {
   };
 
   const validateShippingForm = () => {
-    const errors = {
-      fullName: '',
-      address: '',
-      city: '',
-      postalCode: '',
-      phone: '',
-      deliverySlot: '',
-    };
+    const errors = {} as typeof shippingErrors;
 
     if (!shippingData.fullName.trim()) {
       errors.fullName = 'Full name is required';

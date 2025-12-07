@@ -35,6 +35,8 @@ import { Cart } from './types';
 import { AddToCart, RemoveFromCart } from './useCart';
 import { ShippingDetails } from './ShippingDetails';
 import { useShippingDetails } from './useShippingDetails';
+import { PaymentMethod } from './PaymentMethod';
+import { usePaymentMethod } from './usePaymentMethod';
 
 const steps = [
   'Cart Review',
@@ -60,6 +62,13 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
     validateShippingForm,
   } = useShippingDetails();
 
+  const {
+    paymentData,
+    paymentErrors,
+    handlePaymentChange,
+    validatePaymentForm,
+  } = usePaymentMethod();
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -71,6 +80,12 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
 
     if (activeStep === 1) {
       if (!validateShippingForm()) {
+        return;
+      }
+    }
+
+    if (activeStep === 2) {
+      if (!validatePaymentForm()) {
         return;
       }
     }
@@ -252,10 +267,11 @@ export function Checkout({ cart, addToCart, removeFromCart }: CheckoutProps) {
         );
       case 2:
         return (
-          <Box>
-            <Typography variant='h5'>Payment Method</Typography>
-            <Typography color='text.secondary'>Step 3 - Coming next</Typography>
-          </Box>
+          <PaymentMethod
+            paymentData={paymentData}
+            paymentErrors={paymentErrors}
+            onPaymentChange={handlePaymentChange}
+          />
         );
       case 3:
         return (
