@@ -31,7 +31,7 @@ import { ShippingDetails } from './ShippingDetails';
 import { useShippingDetails } from '../../hooks/useShippingDetails';
 import { PaymentMethod } from './PaymentMethod';
 import { usePaymentMethod } from '../../hooks/usePaymentMethod';
-import { OrderConfirmation } from './OrderConfitmation';
+import { OrderConfirmation } from './OrderConfirmation';
 import { useOrderConfirmation } from '../../hooks/useOrderConfirmation';
 import { calculateTax } from '../../utils/utils';
 import { CartReview } from './CartReview';
