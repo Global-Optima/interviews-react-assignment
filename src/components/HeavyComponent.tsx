@@ -1,5 +1,3 @@
-
-
 const heavyness = 2;
 
 // do not remove this component
