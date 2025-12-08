@@ -86,12 +86,15 @@ export const handlers = [
       }
       return true;
     });
-    const realPage = parseInt(page, 10) || 0;
-    const realLimit = parseInt(limit, 10) || 10;
-    const pageList = filteredProducts.slice(
-      realPage * realLimit,
-      (realPage + 1) * realLimit
-    );
+    const requestedPage = parseInt(page || "1", 10);
+    const realLimit = parseInt(limit, 10);
+
+    const realPage = requestedPage > 0 ? requestedPage - 1 : 0;
+
+    const sliceStart = realPage * realLimit;
+    const sliceEnd = sliceStart + realLimit;
+
+    const pageList = filteredProducts.slice(sliceStart, sliceEnd);
 
     return HttpResponse.json({
       products: pageList,
