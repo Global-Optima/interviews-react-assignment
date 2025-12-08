@@ -5,16 +5,19 @@ export function useInfiniteScroll<T>({
   hasMore,
   threshold = 0.5,
   isLoading,
+  containerRef,
 }: {
   loadMore: () => Promise<T[]> | Promise<void>;
   hasMore: boolean;
   threshold?: number;
   isLoading: boolean;
+  containerRef: React.RefObject<HTMLDivElement>
 }) {
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!hasMore || isLoading) return;
+
     const observer = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
@@ -22,7 +25,8 @@ export function useInfiniteScroll<T>({
         }
       },
       {
-        threshold 
+        threshold,
+        root: containerRef.current
       }
     );
 

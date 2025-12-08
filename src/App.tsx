@@ -2,7 +2,7 @@ import { Products } from './components/products-page/Products.tsx';
 import { Box, CssBaseline } from '@mui/material';
 import SearchAppBar from './components/SearchAppBar.tsx';
 import { Categories } from './components/products-page/Categories.tsx';
-import { useEffect, useState,  } from 'react';
+import { useEffect, useRef, useState,  } from 'react';
 import { useInfiniteScroll } from './hooks/useInfiniteScroll.ts';
 import { useDebounce } from './hooks/useDebounce.ts';
 import { ProductFilters } from './components/products-page/ProductFilters.tsx';
@@ -30,7 +30,10 @@ export interface ProductListParams {
   q?: string,
 }
 
+
 function App() {
+  const abortRef = useRef<AbortController | null>(null);
+  const containerRef = useRef(null);
   const locationParams = new URLSearchParams(window.location.search);
   const [searchText, setSearchText] = useState(locationParams.get("q") || "");
   const [category, setCategory] = useState<string | null>(locationParams.get("category") || null);
@@ -47,87 +50,106 @@ function App() {
   const [totalResults, setTotalResults] = useState(0);
   const [maxPriceRange, setMaxPriceChange] = useState(0);
   
-const loadMore = async (replace = false) => {
-  setIsLoading(true);
-  if (replace) {
-    setProducts([]);
-    setPage(0);
-    setTotalResults(0);
-  }
-  try {
-    // 30% error chance uncomment this code to test the retry button feature
-    // if (Math.random() < 0.3) { 
-    //   throw new Error("Random test error"); 
-    // }
-    const params = new URLSearchParams({
-      page: String(replace ? 0 : page),
-      limit: String(itemsPerRow * 6),
-      sortOrder,
-      sortBy,
-      minPrice: String(priceRange[0]),
-      maxPrice: String(priceRange[1]),
-    });
-    if (debouncedSearch) params.set("q", debouncedSearch);
-    if (category) params.set("category", category);
-    const res = await fetch(`/products?${params.toString()}`);
-    const { products: newProducts, hasMore, total, maxPriceChange } = await res.json();
-    setHasMore(hasMore);
-    setMaxPriceChange(Math.max(1000, maxPriceChange));
-    setTotalResults(total || 0);
-    setProducts(prev => replace ? newProducts : [...prev, ...newProducts]);
-    setPage(p => replace ? 1 : p + 1);
-    setFetchErrored(false);
-  } catch (e) {
-    console.error("Could not fetch products:", e);
-    setFetchErrored(true);
-    setHasMore(false);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  const loadMore = async (replace = false) => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setIsLoading(true);
+    if (replace) {
+      setProducts([]);
+      setPage(0);
+      setTotalResults(0);
+    }
+    try {
+      // 30% error chance uncomment this code to test the retry button feature
+      // if (Math.random() < 0.3) { 
+      //   throw new Error("Random test error"); 
+      // }
+      const params = new URLSearchParams({
+        page: String(replace ? 0 : page),
+        limit: String(itemsPerRow * 6),
+        sortOrder,
+        sortBy,
+        minPrice: String(priceRange[0]),
+        maxPrice: String(priceRange[1]),
+      });
+      if (debouncedSearch) params.set("q", debouncedSearch);
+      if (category) params.set("category", category);
+      const res = await fetch(`/products?${params.toString()}`, {
+        signal: controller.signal
+      });
+      const { products: newProducts, hasMore, total, maxPriceChange } = await res.json();
+      setHasMore(hasMore);
+      setMaxPriceChange(Math.max(1000, maxPriceChange));
+      setTotalResults(total || 0);
+      setProducts(prev => replace ? newProducts : [...prev, ...newProducts]);
+      setPage(p => replace ? 1 : p + 1);
+      setFetchErrored(false);
+    } catch (e: any) {
+      if (e.name === "AbortError") {
+        console.log("Request cancelled due to newer request");
+        return;
+      }
+
+      console.error("Could not fetch products:", e);
+      setFetchErrored(true);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { loaderRef } = useInfiniteScroll({
     loadMore,
     hasMore,
-    threshold: 0,
     isLoading,
+    containerRef,
   });
 
   function onCartChange(cart: Cart) {
     setCart(cart);
   }
-  
+
   function addToCart(productId: number, quantity: number) {
-    setProducts(products.map(product => {
-      if (product.id === productId) {
-        return {
-          ...product,
-          loading: true,
-        };
-      }
-      return product;
-    }));
+    setProducts(prev =>
+      prev.map(product => {
+        if (product.id === productId) {
+          return {
+            ...product,
+            itemInCart: (product.itemInCart || 0) + quantity,
+          };
+        }
+        return product;
+      })
+    );
     fetch('/cart', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ productId, quantity }),
-    }).then(async response => {
-      if (response.ok) {
-        const cart = await response.json();
-        setProducts(products.map(product => {
+    })
+    .then(async response => {
+      if (!response.ok) throw new Error("Failed to update cart");
+      const cart = await response.json();
+      onCartChange(cart);
+    })
+    .catch(() => {
+      setProducts(prev =>
+        prev.map(product => {
           if (product.id === productId) {
             return {
               ...product,
-              itemInCart: (product.itemInCart || 0) + quantity,
-              loading: false,
+              itemInCart: (product.itemInCart || 0) - quantity,
             };
           }
           return product;
-        }));
-        onCartChange(cart);
-      }
+        })
+      );
     });
   }
 
@@ -187,6 +209,7 @@ const loadMore = async (replace = false) => {
           }}
         />
           <Products 
+            containerRef={containerRef}
             addToCart={addToCart} 
             itemsPerRow={itemsPerRow}
             products={products}

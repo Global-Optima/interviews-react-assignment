@@ -8,9 +8,10 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
+import React from "react";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
-import { Product } from "./Products";
+import { Product } from "../../App";
 
 interface ProductItemProps {
   product: Product;
@@ -19,13 +20,22 @@ interface ProductItemProps {
 
 const ProductItem = ({ product, addToCart }: ProductItemProps) => {
   return (
-    <Card sx={{ width: "100%" }}>
+    <Card sx={{ width: "100%", height: 320, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <CardMedia component="img" height={150} image={product.imageUrl} />
-      <CardContent>
-        <Typography gutterBottom variant="h6" component="div">
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography gutterBottom variant="h6" component="div" noWrap>
           {product.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           Lorem ipsum dolor sit amet, consectetur adipiscing elit
         </Typography>
       </CardContent>
@@ -35,25 +45,9 @@ const ProductItem = ({ product, addToCart }: ProductItemProps) => {
         </Typography>
         <Box flexGrow={1} />
         <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
-          {product.loading && (
-            <Box
-              sx={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CircularProgress size={20} />
-            </Box>
-          )}
           <IconButton
             size="small"
-            disabled={product.loading}
+            disabled={product.loading || !product.itemInCart}
             onClick={() => addToCart(product.id, -1)}
           >
             <RemoveIcon fontSize="small" />
@@ -74,4 +68,4 @@ const ProductItem = ({ product, addToCart }: ProductItemProps) => {
   );
 };
 
-export default ProductItem;
+export default React.memo(ProductItem);

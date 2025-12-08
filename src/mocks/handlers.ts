@@ -61,7 +61,12 @@ export const handlers = [
     let filteredProducts = products.filter(product => {
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (category && product.category !== category) return false;
-      if (product.price < minPrice || product.price > maxPrice) return false;
+      return true;
+    });
+    const maxPriceChange = filteredProducts.reduce((max, p) => Math.max(max, p.price), 0);
+    filteredProducts = filteredProducts.filter(product => {
+      if (minPrice != null && product.price < minPrice) return false;
+      if (maxPrice != null && product.price > maxPrice) return false;
       return true;
     });
     if (sortBy === 'name') {
@@ -73,11 +78,14 @@ export const handlers = [
       filteredProducts.sort((a, b) => {
         return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
       });
+    } else if (sortBy === 'id') {
+      filteredProducts.sort((a, b) => {
+        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id;
+      });
     }
     const realPage = parseInt(page, 10) || 0;
     const realLimit = parseInt(limit, 10) || 10;
     const pageList = filteredProducts.slice(realPage * realLimit, (realPage + 1) * realLimit);
-    const maxPriceChange = filteredProducts.reduce((max, p) => Math.max(max, p.price), 0);
     return HttpResponse.json({
       products: pageList,
       total: filteredProducts.length,

@@ -55,6 +55,8 @@ export function ProductFilters({
             <MenuItem value="name-desc">Name Z → A</MenuItem>
             <MenuItem value="price-asc">Price Low → High</MenuItem>
             <MenuItem value="price-desc">Price High → Low</MenuItem>
+            <MenuItem value="id-asc">Id Low → High</MenuItem>
+            <MenuItem value="id-desc">Id High → Low</MenuItem>
             </Select>
         </FormControl>
 
@@ -79,6 +81,7 @@ export function ProductFilters({
         )}
         {(minPrice !== null || maxPrice !== null) && (
           <Chip
+            disabled={maxPrice === Infinity}
             label={`Price: $${minPrice ?? 0} - ${maxPrice === Infinity? 'Max' : `$${maxPrice ?? priceRange[1]}`}`}
             onDelete={clearPrice}
             color="primary"
@@ -87,7 +90,7 @@ export function ProductFilters({
         )}
         {(category || searchText || minPrice !== null || maxPrice !== null) && (
           <Button size="small" color="error" variant="outlined" onClick={clearAll}>
-            Clear All
+            Clear All Filters
           </Button>
         )}
         {/* Result count */}
