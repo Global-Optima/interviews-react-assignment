@@ -42,7 +42,6 @@ export const Step4OrderConfirmation = ({
         Review and Place Order
       </Typography>
 
-      {/* Order Status/Message */}
       {orderStatus !== "idle" && (
         <Box my={2}>
           <Alert
@@ -144,20 +143,31 @@ export const Step4OrderConfirmation = ({
           </Box>
         </Box>
       </Box>
-
-      {orderStatus === "failure" && (
-        <Box textAlign="right" mt={3}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+        {orderStatus !== "success" && (
           <Button
             onClick={onRetry}
+            disabled={orderStatus === "loading" || items.length === 0}
             variant="contained"
-            color="primary"
+            color={orderStatus === "failure" ? "warning" : "success"}
             size="large"
-            aria-label="Retry Order"
+            aria-label={
+              orderStatus === "failure" ? "Retry Order" : "Place Order"
+            }
           >
-            Retry Order
+            {orderStatus === "loading" ? (
+              <Box display="flex" alignItems="center">
+                <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
+                Placing Order...
+              </Box>
+            ) : orderStatus === "failure" ? (
+              "Retry Order"
+            ) : (
+              "Place Order"
+            )}
           </Button>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   );
 };

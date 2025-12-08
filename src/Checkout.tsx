@@ -213,29 +213,11 @@ export const Checkout = ({
         {activeStep < steps.length - 1 && (
           <Button
             onClick={handleNext}
-            disabled={!isStepValid}
+            disabled={orderStatus === "loading" || !isStepValid}
             variant="contained"
-            aria-label={`Continue to ${steps[activeStep + 1]}`}
+            color="primary"
           >
-            Next
-          </Button>
-        )}
-        {activeStep === steps.length - 1 && orderStatus !== "success" && (
-          <Button
-            onClick={handlePlaceOrder}
-            disabled={orderStatus === "loading" || cart.totalItems === 0}
-            variant="contained"
-            color="success"
-            aria-label="Place Order"
-          >
-            {orderStatus === "loading" ? (
-              <Box display="flex" alignItems="center">
-                <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
-                Placing Order...
-              </Box>
-            ) : (
-              "Place Order"
-            )}
+            {activeStep === steps.length - 1 ? "Review Order" : "Next"}
           </Button>
         )}
       </Box>
