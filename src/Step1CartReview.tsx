@@ -13,20 +13,28 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Cart, Product } from "./Products";
 
-// This is a simplified version of cart manipulation for the checkout flow.
-// In a real app, this would call the same API endpoint as the Products component.
 const mockCartUpdate = (
   currentCart: Cart,
   productId: number,
   quantityChange: number
 ): Cart => {
+  // Find the index of the item being updated
   const itemIndex = currentCart.items.findIndex(
     (item) => item.id === productId
   );
 
-  if (itemIndex === -1) return currentCart;
+  if (itemIndex === -1 && quantityChange <= 0) return currentCart;
 
-  const currentItem = currentCart.items[itemIndex];
+  const currentItem = currentCart.items[itemIndex] || {
+    id: productId,
+    name: "Unknown",
+    imageUrl: "",
+    price: 0,
+    category: "",
+    itemInCart: 0,
+    loading: false,
+  };
+
   const newQty = currentItem.itemInCart + quantityChange;
 
   let newItems: Product[] = [];
@@ -35,10 +43,8 @@ const mockCartUpdate = (
       index === itemIndex ? { ...item, itemInCart: newQty } : item
     );
   } else {
-    // Remove item if quantity is 0 or less
     newItems = currentCart.items.filter((_item, index) => index !== itemIndex);
   }
-
   const newTotalItems = newItems.reduce(
     (acc, item) => acc + item.itemInCart,
     0
@@ -60,60 +66,64 @@ const CartItem = ({
   onUpdate,
 }: {
   item: Product;
-  onUpdate: (productId: number, quantityChange: number) => void;
-}) => (
-  <Card sx={{ display: "flex", mb: 2, alignItems: "center" }} elevation={1}>
-    <CardMedia
-      component="img"
-      sx={{ width: 80, height: 80, objectFit: "cover" }}
-      image={item.imageUrl}
-      alt={item.name}
-    />
-    <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
-      <CardContent sx={{ flex: "1 0 auto", py: 1, "&:last-child": { pb: 1 } }}>
-        <Typography component="div" variant="body1">
-          {item.name}
+  onUpdate: (id: number, qty: number) => void;
+}) => {
+  return (
+    <Card sx={{ display: "flex", mb: 2, alignItems: "center" }} elevation={1}>
+      <CardMedia
+        component="img"
+        sx={{ width: 80, height: 80, objectFit: "cover" }}
+        image={item.imageUrl}
+        alt={item.name}
+      />
+      <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+        <CardContent
+          sx={{ flex: "1 0 auto", py: 1, "&:last-child": { pb: 1 } }}
+        >
+          <Typography component="div" variant="body1">
+            {item.name}
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            ${item.price.toFixed(2)}
+          </Typography>
+        </CardContent>
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        mx={2}
+        sx={{ minWidth: 150, justifyContent: "flex-end" }}
+      >
+        <IconButton
+          size="small"
+          onClick={() => onUpdate(item.id, -1)}
+          aria-label="Decrease quantity"
+        >
+          <RemoveIcon fontSize="inherit" />
+        </IconButton>
+        <Typography variant="body1" component="span" mx={1}>
+          {item.itemInCart}
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          ${item.price.toFixed(2)}
-        </Typography>
-      </CardContent>
-    </Box>
-    <Box
-      display="flex"
-      flexDirection="row"
-      alignItems="center"
-      mx={2}
-      sx={{ minWidth: 150, justifyContent: "flex-end" }}
-    >
-      <IconButton
-        size="small"
-        onClick={() => onUpdate(item.id, -1)}
-        aria-label="Decrease quantity"
-      >
-        <RemoveIcon fontSize="inherit" />
-      </IconButton>
-      <Typography variant="body1" component="span" mx={1}>
-        {item.itemInCart}
-      </Typography>
-      <IconButton
-        size="small"
-        onClick={() => onUpdate(item.id, 1)}
-        aria-label="Increase quantity"
-      >
-        <AddIcon fontSize="inherit" />
-      </IconButton>
-      <IconButton
-        size="small"
-        color="error"
-        onClick={() => onUpdate(item.id, -item.itemInCart)}
-        aria-label="Remove item"
-      >
-        <DeleteIcon fontSize="small" />
-      </IconButton>
-    </Box>
-  </Card>
-);
+        <IconButton
+          size="small"
+          onClick={() => onUpdate(item.id, 1)}
+          aria-label="Increase quantity"
+        >
+          <AddIcon fontSize="inherit" />
+        </IconButton>
+        <IconButton
+          size="small"
+          color="error"
+          onClick={() => onUpdate(item.id, -item.itemInCart)}
+          aria-label="Remove item"
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    </Card>
+  );
+};
 
 export const Step1CartReview = ({
   cart,
@@ -129,8 +139,7 @@ export const Step1CartReview = ({
   onCartUpdate: (newCart: Cart) => void;
 }) => {
   const handleUpdate = (productId: number, quantityChange: number) => {
-    // In a real app, this would call the /cart POST API.
-    // For this challenge, we mock the local state update.
+    // in a real app, this would call the /cart for this challenge, we mock the local state update
     const newCart = mockCartUpdate(cart, productId, quantityChange);
     onCartUpdate(newCart);
   };

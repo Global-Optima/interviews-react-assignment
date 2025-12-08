@@ -8,43 +8,52 @@ import {
   TextField,
 } from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
-import PayPalIcon from "@mui/icons-material/GitHub"; // Use an alternative icon for mock PayPal
+import PayPalIcon from "@mui/icons-material/GitHub";
 import PaidIcon from "@mui/icons-material/Paid";
 import { PaymentDetails } from "./Checkout";
+import { isExpired } from "./helper";
 
-// Client-side validation
 export const validatePaymentDetails = (details: PaymentDetails): boolean => {
   if (!details.method) return false;
-
   if (details.method === "Credit Card") {
-    // Basic validation for Credit Card fields
-    return (
-      /^\d{16}$/.test(details.cardNumber.replace(/\s/g, "")) && // 16 digits card number
-      /^(0[1-9]|1[0-2])\/\d{2}$/.test(details.expiry) && // MM/YY format
-      /^\d{3,4}$/.test(details.cvv) // 3 or 4 digits CVV
-    );
+    const isCardValid = /^\d{16}$/.test(details.cardNumber.replace(/\s/g, ""));
+    const isExpiryFormatValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(details.expiry);
+    const isCvvValid = /^\d{3}$/.test(details.cvv);
+
+    const isExpiryNotPast = isExpiryFormatValid && !isExpired(details.expiry);
+
+    return isCardValid && isExpiryFormatValid && isCvvValid && isExpiryNotPast;
   }
-  // PayPal and Cash on Delivery are considered valid if selected
   return true;
 };
 
-// Validation state for error messages
-const getValidationErrors = (details: PaymentDetails) => ({
-  cardNumber:
-    details.method === "Credit Card" &&
-    !/^\d{16}$/.test(details.cardNumber.replace(/\s/g, ""))
-      ? "Invalid card number (16 digits)"
-      : "",
-  expiry:
-    details.method === "Credit Card" &&
-    !/^(0[1-9]|1[0-2])\/\d{2}$/.test(details.expiry)
-      ? "Invalid expiry (MM/YY)"
-      : "",
-  cvv:
-    details.method === "Credit Card" && !/^\d{3,4}$/.test(details.cvv)
-      ? "Invalid CVV (3 or 4 digits)"
-      : "",
-});
+const getValidationErrors = (details: PaymentDetails) => {
+  const isExpiryFormatValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(details.expiry);
+  const isCardExpired = isExpiryFormatValid && isExpired(details.expiry);
+
+  let expiryError = "";
+  if (details.method === "Credit Card") {
+    if (!isExpiryFormatValid) {
+      expiryError = "Invalid expiry (MM/YY)";
+    } else if (isCardExpired) {
+      expiryError = "Card has expired";
+    }
+  }
+
+  return {
+    cardNumber:
+      details.method === "Credit Card" &&
+      !/^\d{16}$/.test(details.cardNumber.replace(/\s/g, ""))
+        ? "Invalid card number (16 digits)"
+        : "",
+    expiry: expiryError,
+
+    cvv:
+      details.method === "Credit Card" && !/^\d{3}$/.test(details.cvv)
+        ? "Invalid CVV (3 digits)"
+        : "",
+  };
+};
 
 export const Step3PaymentMethod = ({
   details,
@@ -64,7 +73,6 @@ export const Step3PaymentMethod = ({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    // Simple formatting for card number
     let formattedValue = value;
     if (name === "cardNumber") {
       formattedValue = value
@@ -72,12 +80,20 @@ export const Step3PaymentMethod = ({
         .slice(0, 16)
         .replace(/(\d{4})/g, "$1 ")
         .trim();
+    } else if (name === "expiry") {
+      const digits = value.replace(/\D/g, "");
+      if (digits.length > 2) {
+        formattedValue = digits.slice(0, 2) + "/" + digits.slice(2, 4);
+      } else {
+        formattedValue = digits;
+      }
+      formattedValue = formattedValue.slice(0, 5);
     }
     onChange({ ...details, [name]: formattedValue });
   };
 
   const handleBlur = (_name: keyof PaymentDetails) => () => {
-    // Re-trigger validation on blur for fields
+    // re-trigger validation on blur for fields
     onChange({ ...details });
   };
 

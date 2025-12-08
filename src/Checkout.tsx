@@ -42,32 +42,6 @@ const steps = [
   "Order Confirmation",
 ];
 
-const TAX_RATE = 0.1; // 10% tax
-
-// Mock API Call to simulate order placement
-const placeOrder = async (
-  _orderData: any
-): Promise<{ success: boolean; message: string }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // 50% failure rate
-      const success = Math.random() > 0.5;
-
-      if (success) {
-        resolve({
-          success: true,
-          message: "Order placed successfully! Your order ID is #12345.",
-        });
-      } else {
-        resolve({
-          success: false,
-          message: "Order failed to process. Please try again.",
-        });
-      }
-    }, 1500); // Simulate network delay
-  });
-};
-
 export const Checkout = ({
   cart,
   onCartUpdate, // Function to update cart in parent/global state
@@ -91,10 +65,9 @@ export const Checkout = ({
   const [orderMessage, setOrderMessage] = useState<string>("");
 
   // --- Calculations ---
-  const subtotal = cart.totalPrice;
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax;
-
+  const subtotal = useMemo(() => cart.totalPrice, [cart.totalPrice]);
+  const tax = useMemo(() => subtotal * 0.1, [subtotal]);
+  const total = useMemo(() => subtotal + tax, [subtotal, tax]);
   // --- Step Validation ---
   const isStepValid = useMemo(() => {
     switch (activeStep) {
@@ -126,55 +99,43 @@ export const Checkout = ({
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   }, []);
 
-  // --- Order Placement ---
   const handlePlaceOrder = useCallback(async () => {
-    if (orderStatus === "loading") return;
+    if (cart.totalItems === 0) return;
 
     setOrderStatus("loading");
-    setOrderMessage("");
 
-    const orderData = {
-      cart: cart.items.map((item) => ({
-        id: item.id,
-        quantity: item.itemInCart,
-        price: item.price,
-      })),
-      shipping: shippingDetails,
-      payment: {
-        method: paymentDetails.method,
-        // Only include non-sensitive or masked data for a real API
-        details:
-          paymentDetails.method === "Credit Card"
-            ? { last4: paymentDetails.cardNumber.slice(-4) }
-            : {},
-      },
-      subtotal,
-      tax,
-      total,
-    };
+    try {
+      const response = await fetch("/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const result = await placeOrder(orderData);
+      if (!response.ok) {
+        throw new Error("Order placement failed. Please try again.");
+      }
 
-    if (result.success) {
       setOrderStatus("success");
-      setOrderMessage(result.message);
-      // Clear cart on success
-      onCartUpdate({ items: [], totalPrice: 0, totalItems: 0 });
-    } else {
-      setOrderStatus("failure");
-      setOrderMessage(result.message);
-    }
-  }, [
-    cart,
-    shippingDetails,
-    paymentDetails,
-    subtotal,
-    tax,
-    total,
-    orderStatus,
-    onCartUpdate,
-  ]);
+      setOrderMessage("✅ Success! Your order has been placed and confirmed.");
+      onCartUpdate({
+        items: [],
+        totalPrice: 0,
+        totalItems: 0,
+      });
 
+      localStorage.removeItem("checkout_shipping_details");
+      localStorage.removeItem("checkout_payment_details");
+    } catch (error) {
+      console.error("Order failed:", error);
+      setOrderStatus("failure");
+      setOrderMessage(
+        `❌ Order failed. ${
+          error instanceof Error
+            ? error.message
+            : "There was a server issue. Please try again."
+        }`
+      );
+    }
+  }, [cart.totalItems, onCartUpdate]);
   const handleRetryOrder = useCallback(() => {
     handlePlaceOrder(); // Simply retry the order placement
   }, [handlePlaceOrder]);

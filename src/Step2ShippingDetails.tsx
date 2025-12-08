@@ -19,15 +19,22 @@ export type ShippingDetails = {
   phone: string;
   timeSlot: "Morning" | "Afternoon" | "Evening" | "";
 };
-
+type ShippingErrors = Record<keyof ShippingDetails, string>;
 const STORAGE_KEY = "checkout_shipping_details";
+const PHONE_BASE_PREFIX = "87";
+const PHONE_TOTAL_DIGITS = 11;
 
 // Helper to load details from local storage
 export const loadShippingDetails = (): ShippingDetails => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const details = JSON.parse(saved);
+      // Ensure the phone is initialized with at least the fixed prefix '8 (7'
+      if (!details.phone || details.phone.replace(/\D/g, "").length < 2) {
+        details.phone = "8 (7";
+      }
+      return details;
     } catch (e) {
       console.error("Could not parse shipping details from local storage", e);
     }
@@ -37,8 +44,8 @@ export const loadShippingDetails = (): ShippingDetails => {
     address: "",
     city: "",
     postalCode: "",
-    phone: "",
-    timeSlot: "Morning", // Default to Morning
+    phone: "8 (7", // Initialize phone with the fixed part of the prefix: '8 (7'
+    timeSlot: "Morning",
   };
 };
 
@@ -50,30 +57,42 @@ export const saveShippingDetails = (details: ShippingDetails) => {
 // Client-side validation
 export const validateShippingDetails = (details: ShippingDetails): boolean => {
   const { fullName, address, city, postalCode, phone, timeSlot } = details;
-  // Simple validation: check if all fields are non-empty/valid
-  return (
-    !!fullName &&
-    !!address &&
-    !!city &&
-    /^\d{5}(-\d{4})?$/.test(postalCode) && // Basic postal code format (US-centric, adjust as needed)
-    /^\d{10}$/.test(phone.replace(/\D/g, "")) && // 10 digits phone number
-    !!timeSlot
-  );
+  const strippedPhone = phone.replace(/\D/g, "");
+
+  // 1. Check if all basic fields are valid
+  const baseValid = !!fullName && !!address && !!city && !!timeSlot;
+
+  // 2. Validate Postal Code: exactly 6 digits
+  const isPostalCodeValid = /^\d{6}$/.test(postalCode);
+
+  // 3. Validate Phone: Must be 11 digits total AND start with '87'
+  const isPhoneValid =
+    strippedPhone.length === PHONE_TOTAL_DIGITS &&
+    strippedPhone.startsWith(PHONE_BASE_PREFIX);
+
+  return baseValid && isPostalCodeValid && isPhoneValid;
 };
 
 // Validation state for error messages
-const getValidationErrors = (details: ShippingDetails) => ({
-  fullName: !details.fullName ? "Full name is required" : "",
-  address: !details.address ? "Address is required" : "",
-  city: !details.city ? "City is required" : "",
-  postalCode: !/^\d{5}(-\d{4})?$/.test(details.postalCode)
-    ? "Invalid postal code"
-    : "",
-  phone: !/^\d{10}$/.test(details.phone.replace(/\D/g, ""))
-    ? "Invalid phone number (10 digits required)"
-    : "",
-  timeSlot: !details.timeSlot ? "A time slot must be selected" : "",
-});
+const getValidationErrors = (details: ShippingDetails): ShippingErrors => {
+  // ⭐️ Return type added
+  const strippedPhone = details.phone.replace(/\D/g, "");
+
+  return {
+    // Ensure all 6 fields from ShippingDetails are present here!
+    fullName: !details.fullName ? "Full name is required" : "",
+    address: !details.address ? "Address is required" : "",
+    city: !details.city ? "City is required" : "",
+    postalCode: !/^\d{6}$/.test(details.postalCode)
+      ? "Postal code must be 6 digits (e.g., 010000)"
+      : "",
+    phone:
+      strippedPhone.length !== 11
+        ? "Phone number must be complete (11 digits required)"
+        : "",
+    timeSlot: !details.timeSlot ? "A time slot must be selected" : "",
+  };
+};
 
 export const Step2ShippingDetails = ({
   details,
@@ -82,7 +101,9 @@ export const Step2ShippingDetails = ({
   details: ShippingDetails;
   onChange: (details: ShippingDetails) => void;
 }) => {
-  const [errors, setErrors] = useState(getValidationErrors(details));
+  const [errors, setErrors] = useState<ShippingErrors>(
+    getValidationErrors(details)
+  );
   const [touched, setTouched] = useState<
     Record<keyof ShippingDetails, boolean>
   >({
@@ -101,8 +122,50 @@ export const Step2ShippingDetails = ({
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value } = event.target;
-      onChange({ ...details, [name]: value });
+      let { name, value } = event.target;
+      let newValue = value;
+
+      if (name === "postalCode") {
+        newValue = value.replace(/\D/g, "").slice(0, 6);
+      } else if (name === "phone") {
+        // 1. Remove non-digits from the value
+        let digits = value.replace(/\D/g, "");
+
+        // 2. Enforce the fixed prefix '87'
+        if (!digits.startsWith(PHONE_BASE_PREFIX)) {
+          digits = PHONE_BASE_PREFIX;
+        }
+
+        // 3. Limit total length to 11 digits
+        digits = digits.slice(0, PHONE_TOTAL_DIGITS);
+
+        // 4. Format the number: 8 (7XX) XXX XXXX
+        let formattedPhone = "8";
+        if (digits.length > 1) {
+          // 8 (7
+          formattedPhone += " (" + digits.substring(1, 2);
+        }
+        if (digits.length > 2) {
+          // 8 (7XX
+          formattedPhone += digits.substring(2, 4);
+        }
+        if (digits.length > 4) {
+          // 8 (7XX) XXX
+          formattedPhone += ") " + digits.substring(4, 7);
+        }
+        if (digits.length > 7) {
+          // 8 (7XX) XXX XXX
+          formattedPhone += " " + digits.substring(7, 9);
+        }
+        if (digits.length > 9) {
+          // 8 (7XX) XXX XXXX
+          formattedPhone += " " + digits.substring(9, 11);
+        }
+
+        newValue = formattedPhone;
+      }
+
+      onChange({ ...details, [name]: newValue });
     },
     [details, onChange]
   );
@@ -176,8 +239,9 @@ export const Step2ShippingDetails = ({
             value={details.postalCode}
             onChange={handleChange}
             onBlur={handleBlur("postalCode")}
+            placeholder="010000 (6 digits)"
+            inputProps={{ "aria-required": true, maxLength: 6 }}
             {...getErrorProps("postalCode")}
-            inputProps={{ "aria-required": true }}
           />
         </Grid>
         <Grid item xs={12}>
@@ -189,8 +253,9 @@ export const Step2ShippingDetails = ({
             value={details.phone}
             onChange={handleChange}
             onBlur={handleBlur("phone")}
-            {...getErrorProps("phone")}
+            placeholder="8 (7XX) XXX XXXX"
             inputProps={{ "aria-required": true }}
+            {...getErrorProps("phone")}
           />
         </Grid>
 

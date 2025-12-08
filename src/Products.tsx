@@ -207,21 +207,46 @@ export const Products = ({
       })
         .then(async (response) => {
           if (!response.ok) throw new Error("Cart update failed");
-          const cart = await response.json();
 
-          // update state
-          setProducts((prevProducts) =>
-            prevProducts.map((product) =>
-              product.id === productId
-                ? {
-                    ...product,
-                    itemInCart: (product.itemInCart || 0) + quantity,
-                    loading: false,
-                  }
-                : product
-            )
+          const incomingCart = await response.json();
+
+          const transformedCartItems = incomingCart.items.map(
+            (item: { product: any; quantity: any }) => ({
+              ...item.product,
+              itemInCart: item.quantity,
+              loading: false,
+            })
           );
-          onCartChange(cart);
+
+          const transformedCart = {
+            items: transformedCartItems,
+            totalPrice: incomingCart.totalPrice,
+            totalItems: incomingCart.totalItems,
+          };
+          const newCartMap = new Map<number, Product>(
+            transformedCartItems.map((item: { id: any }) => [item.id, item])
+          );
+          setProducts((prevProducts) => {
+            return prevProducts.map((product) => {
+              if (newCartMap.has(product.id)) {
+                const newCartItem = newCartMap.get(product.id)!; // not null or undefined
+
+                return {
+                  ...product,
+                  itemInCart: newCartItem.itemInCart,
+                  loading: false,
+                };
+              } else {
+                return {
+                  ...product,
+                  itemInCart: 0,
+                  loading: false,
+                };
+              }
+            });
+          });
+
+          onCartChange(transformedCart);
         })
         .catch(() => {
           setProducts((prevProducts) =>
@@ -233,7 +258,7 @@ export const Products = ({
           );
         });
     },
-    [onCartChange] //used callback again for prevent rerednder: react sees useCallback, i checks dependency array, nothing in dependency array changed? reuse the old function brat
+    [onCartChange]
   );
 
   return (

@@ -23,7 +23,6 @@ export const Step4OrderConfirmation = ({
   total,
   orderStatus,
   orderMessage,
-  onPlaceOrder,
   onRetry,
 }: {
   items: Product[];
@@ -53,13 +52,6 @@ export const Step4OrderConfirmation = ({
                 : orderStatus === "failure"
                 ? "error"
                 : "info"
-            }
-            action={
-              orderStatus === "failure" && (
-                <Button color="inherit" size="small" onClick={onRetry}>
-                  Retry
-                </Button>
-              )
             }
           >
             {orderStatus === "loading" ? (
@@ -108,7 +100,7 @@ export const Step4OrderConfirmation = ({
               {shipping.city}, {shipping.postalCode}
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={1}>
-              **Delivery Slot:** {shipping.timeSlot}
+              Delivery Slot: {shipping.timeSlot}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -154,20 +146,6 @@ export const Step4OrderConfirmation = ({
         </Box>
       </Box>
 
-      {/* Final Action (only visible if order is not success) - Duplicated for visibility */}
-      {orderStatus === "idle" && (
-        <Box textAlign="right" mt={3}>
-          <Button
-            onClick={onPlaceOrder}
-            variant="contained"
-            color="success"
-            size="large"
-            aria-label="Place Order Now"
-          >
-            Place Order Now
-          </Button>
-        </Box>
-      )}
       {orderStatus === "failure" && (
         <Box textAlign="right" mt={3}>
           <Button
