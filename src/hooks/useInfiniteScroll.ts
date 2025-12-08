@@ -1,31 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function useInfiniteScroll<T>({
   loadMore,
   hasMore,
   threshold = 0.5,
+  isLoading,
 }: {
   loadMore: () => Promise<T[]> | Promise<void>;
   hasMore: boolean;
   threshold?: number;
+  isLoading: boolean;
 }) {
   const loaderRef = useRef<HTMLDivElement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function loadMoreWithLoading() {
-    setIsLoading(true);
-    await loadMore();
-    setIsLoading(false);
-  }
 
   useEffect(() => {
     if (!hasMore || isLoading) return;
     const observer = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          setIsLoading(true);
           await loadMore();
-          setIsLoading(false);
         }
       },
       {
@@ -41,5 +34,5 @@ export function useInfiniteScroll<T>({
     };
   }, [hasMore, isLoading, loadMore]);
 
-  return { loaderRef, isLoading, loadMoreWithLoading };
+  return { loaderRef, isLoading };
 }
