@@ -29,50 +29,45 @@ export const Categories = ({
 }: {
   activeCategory: string;
   onCategorySelect: (category: string) => void;
-  onClearFilters: () => void;
+  onClearFilters: (key?: "searchTerm" | "activeCategory") => void;
   searchTerm: string;
 }) => {
   const isFilterActive = activeCategory !== "" || searchTerm !== "";
   return (
     <Box minWidth={drawerWidth} sx={{ borderRight: "1px solid grey", p: 1 }}>
-      <Box mb={2} px={1}>
-        <Typography variant="subtitle2" color="text.secondary" mb={1}>
-          {isFilterActive ?? "Active Filters:"}
-        </Typography>
-        {isFilterActive ?? (
+      {isFilterActive && (
+        <Box mb={2} px={1}>
           <Chip
-            label="Clear Filters"
-            onClick={onClearFilters}
-            onDelete={onClearFilters}
+            label="Clear All Filters"
+            onClick={() => onClearFilters()}
+            onDelete={() => onClearFilters()}
             deleteIcon={<ClearIcon />}
             size="small"
             color="error"
-            sx={{ mb: 1 }}
           />
-        )}
 
-        {searchTerm && (
-          <Chip
-            label={`Search: "${searchTerm}"`}
-            size="small"
-            onDelete={() => onClearFilters()}
-            sx={{ mt: 1, mr: 0.5 }}
-          />
-        )}
-        {activeCategory && (
-          <Chip
-            label={`Category: ${activeCategory}`}
-            size="small"
-            color="primary"
-            onDelete={() => onCategorySelect("")}
-            sx={{ mt: 1 }}
-          />
-        )}
-      </Box>
+          <Box display="flex" flexWrap="wrap" gap={0.5}>
+            {searchTerm && (
+              <Chip
+                label={`Search: "${searchTerm}"`}
+                size="small"
+                onDelete={() => onClearFilters("searchTerm")}
+                sx={{ mt: 1 }}
+              />
+            )}
 
-      <Typography variant="subtitle1" component="h3" px={1} mb={0.5}>
-        Product Categories
-      </Typography>
+            {activeCategory && (
+              <Chip
+                label={`${activeCategory}`}
+                size="small"
+                color="primary"
+                onDelete={() => onCategorySelect("")}
+                sx={{ mt: 1 }}
+              />
+            )}
+          </Box>
+        </Box>
+      )}
       <List disablePadding>
         {categories.map((text) => (
           <ListItem

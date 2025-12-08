@@ -39,10 +39,20 @@ function App() {
   function onCartChange(cart: Cart) {
     setCart(cart);
   }
-  const handleClearFilters = useCallback(() => {
-    setSearchTerm("");
-    setActiveCategory("");
-  }, []);
+  const handleClearFilters = useCallback(
+    (key?: "searchTerm" | "activeCategory") => {
+      if (key === "searchTerm") {
+        setSearchTerm("");
+      } else if (key === "activeCategory") {
+        setActiveCategory("");
+      } else {
+        // Default: Clear All
+        setSearchTerm("");
+        setActiveCategory("");
+      }
+    },
+    []
+  );
 
   const handleCategorySelect = useCallback((category: string) => {
     setActiveCategory(category);
