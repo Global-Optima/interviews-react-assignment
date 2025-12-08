@@ -31,6 +31,7 @@ Challenge #2: Advanced Search & Filtering ⭐⭐
    Search and category filtering was added.
    Special hook useDebounce was created to make a delay between searches.
    Chips were used to show which filter is active. They also have button to remove them.
+   Mock endpoint was modified to add sorting and price filtering functionality.
 
 ## How to test my features
 Fetching products fails:
