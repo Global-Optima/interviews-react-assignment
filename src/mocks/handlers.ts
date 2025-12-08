@@ -1,5 +1,5 @@
-import { delay, http, HttpResponse } from 'msw';
-import { names } from './names.ts';
+import { delay, http, HttpResponse } from "msw";
+import { names } from "./names.ts";
 
 type Product = {
   id: number;
@@ -9,7 +9,16 @@ type Product = {
   category: string;
 };
 
-const categories = ['Laptops', 'Smartphones', 'Tablets', 'Accessories', 'Audio', 'Gaming', 'Wearables', 'Cameras'];
+const categories = [
+  "Laptops",
+  "Smartphones",
+  "Tablets",
+  "Accessories",
+  "Audio",
+  "Gaming",
+  "Wearables",
+  "Cameras",
+];
 
 function randomTechCategory() {
   return categories[Math.floor(Math.random() * categories.length)];
@@ -19,7 +28,7 @@ function randomTechCategory() {
 const products: Product[] = names.map((name, index) => ({
   id: index,
   name: name,
-  imageUrl: `https://via.placeholder.com/150?text=Product+${index}`,
+  imageUrl: `https://placehold.co/150x150`,
   price: parseFloat((Math.random() * 2970 + 29).toFixed(2)), // $29 - $2999
   category: randomTechCategory(),
 }));
@@ -37,8 +46,14 @@ function computeCart() {
         quantity,
       };
     });
-  const totalPrice = detailedCart.reduce((acc, { product, quantity }) => acc + product.price * quantity, 0);
-  const totalItems = detailedCart.reduce((acc, { quantity }) => acc + quantity, 0);
+  const totalPrice = detailedCart.reduce(
+    (acc, { product, quantity }) => acc + product.price * quantity,
+    0
+  );
+  const totalItems = detailedCart.reduce(
+    (acc, { quantity }) => acc + quantity,
+    0
+  );
   return HttpResponse.json({
     items: detailedCart,
     totalPrice,
@@ -47,20 +62,23 @@ function computeCart() {
 }
 
 export const handlers = [
-  http.get('/products', async ({ request }) => {
+  http.get("/products", async ({ request }) => {
     await delay();
     // Construct a URL instance out of the intercepted request.
     const url = new URL(request.url);
 
     // Read the "id" URL query parameter using the "URLSearchParams" API.
     // Given "/product?id=1", "productId" will equal "1".
-    const searchQuery = url.searchParams.get('q');
-    const category = url.searchParams.get('category');
-    const page = url.searchParams.get('page') || '0';
-    const limit = url.searchParams.get('limit') || '10';
+    const searchQuery = url.searchParams.get("q");
+    const category = url.searchParams.get("category");
+    const page = url.searchParams.get("page") || "0";
+    const limit = url.searchParams.get("limit") || "10";
 
     const filteredProducts = products.filter((product) => {
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (
+        searchQuery &&
+        !product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
         return false;
       }
       if (category && product.category !== category) {
@@ -68,9 +86,15 @@ export const handlers = [
       }
       return true;
     });
-    const realPage = parseInt(page, 10) || 0;
-    const realLimit = parseInt(limit, 10) || 10;
-    const pageList = filteredProducts.slice(realPage * realLimit, (realPage + 1) * realLimit);
+    const requestedPage = parseInt(page || "1", 10);
+    const realLimit = parseInt(limit, 10);
+
+    const realPage = requestedPage > 0 ? requestedPage - 1 : 0;
+
+    const sliceStart = realPage * realLimit;
+    const sliceEnd = sliceStart + realLimit;
+
+    const pageList = filteredProducts.slice(sliceStart, sliceEnd);
 
     return HttpResponse.json({
       products: pageList,
@@ -78,22 +102,28 @@ export const handlers = [
       hasMore: realPage * realLimit + realLimit < filteredProducts.length,
     });
   }),
-  http.post<never, { productId: number; quantity: number }>('/cart', async ({ request }) => {
-    await delay(1000);
-    const { productId, quantity } = await request.json();
-    const currentQuantity = cart[productId] || 0;
-    cart[productId] = currentQuantity + quantity;
-    return computeCart();
-  }),
-  http.get('/cart', async () => {
+  http.post<never, { productId: number; quantity: number }>(
+    "/cart",
+    async ({ request }) => {
+      await delay(1000);
+      const { productId, quantity } = await request.json();
+      const currentQuantity = cart[productId] || 0;
+      cart[productId] = currentQuantity + quantity;
+      return computeCart();
+    }
+  ),
+  http.get("/cart", async () => {
     await delay();
     return HttpResponse.json(computeCart());
   }),
-  http.post('/orders', async () => {
+  http.post("/orders", async () => {
     await delay(1500);
 
     cart = {};
 
-    return new HttpResponse(undefined, Math.random() > 0.5 ? { status: 200 } : { status: 500 });
+    return new HttpResponse(
+      undefined,
+      Math.random() > 0.5 ? { status: 200 } : { status: 500 }
+    );
   }),
 ];
