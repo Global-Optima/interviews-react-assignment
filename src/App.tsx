@@ -1,29 +1,61 @@
-import { Cart, Products } from './Products.tsx';
-import { Box, CssBaseline } from '@mui/material';
+import { Products } from './Products.tsx';
+import { Box, Container, Stack } from '@mui/material';
 import SearchAppBar from './SearchAppBar.tsx';
 import { Categories } from './Categories.tsx';
-import { useState } from 'react';
+import { useCartContext } from './contexts/CartContext.tsx';
 
 function App() {
+  const { cart } = useCartContext();
 
-  const [cart, setCart] = useState<Cart>();
-
-
-  function onCartChange(cart: Cart) {
-    setCart(cart);
-  }
+  console.log('[App] Cart state:', cart);
 
   return (
-    <Box height="100vh" display="flex" flexDirection="column">
-      <CssBaseline/>
-      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-      <Box flex={1} display="flex" flexDirection="row">
-        <Categories/>
-        <Box flex={1}>
-          <Products onCartChange={onCartChange}/>
-        </Box>
-      </Box>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+      }}
+    >
+      {/* Header */}
+      <SearchAppBar quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0} />
+      
+      {/* Main Content */}
+      <Container
+        maxWidth="xl"
+        disableGutters
+        sx={{
+          px: { xs: 2, sm: 3, md: 4 },
+          py: 3,
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={{ xs: 2, md: 3 }}
+          sx={{
+            minHeight: 'calc(100vh - 80px)',
+          }}
+        >
+          {/* Sidebar - Categories */}
+          <Box
+            sx={{
+              width: { xs: '100%', md: 260 },
+              flexShrink: 0,
+            }}
+          >
+            <Categories />
+          </Box>
 
+          {/* Main Content - Products */}
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <Products />
+          </Box>
+        </Stack>
+      </Container>
     </Box>
   );
 }
