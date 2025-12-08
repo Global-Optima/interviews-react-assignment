@@ -15,7 +15,10 @@ import {
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import { HeavyComponent } from "./HeavyComponent";
-
+interface ProductFilters {
+  searchTerm: string;
+  activeCategory: string;
+}
 export type Product = {
   id: number;
   name: string;
@@ -126,8 +129,10 @@ const ProductItem = memo(
 
 export const Products = ({
   onCartChange,
+  filters,
 }: {
   onCartChange: (cart: Cart) => void;
+  filters: ProductFilters;
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
@@ -139,32 +144,55 @@ export const Products = ({
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const ITEMS_PER_PAGE = 20;
+  const { searchTerm, activeCategory } = filters;
+  const fetchProducts = useCallback(
+    async (pageNum: number) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const url = new URL(`${window.location.origin}/products`);
+        url.searchParams.set("limit", ITEMS_PER_PAGE.toString());
+        url.searchParams.set("page", pageNum.toString());
 
-  const fetchProducts = useCallback(async (pageNum: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `/products?limit=${ITEMS_PER_PAGE}&page=${pageNum}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch products");
+        if (searchTerm) {
+          console.log(searchTerm);
+          
+          url.searchParams.set("q", searchTerm);
+        }
+        if (activeCategory) {
+          url.searchParams.set("category", activeCategory);
+        }
 
-      const data = await response.json();
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error("Failed to fetch products");
 
-      if (data.products.length < ITEMS_PER_PAGE) {
-        setHasMore(false); // no items to show
+        const data = await response.json();
+
+        if (data.products.length < ITEMS_PER_PAGE) {
+          setHasMore(false);
+        }
+
+        setProducts((prev) => {
+          if (pageNum === 1) {
+            return data.products;
+          }
+          const newIds = new Set(data.products.map((p: Product) => p.id));
+          const filteredPrev = prev.filter((p) => !newIds.has(p.id));
+          return [...filteredPrev, ...data.products];
+        });
+      } catch (err) {
+        setError("Unable to load products. Please try again.");
+      } finally {
+        setLoading(false);
       }
-      setProducts((prev) => {
-        const newIds = new Set(data.products.map((p: Product) => p.id));
-        const filteredPrev = prev.filter((p) => !newIds.has(p.id));
-        return [...filteredPrev, ...data.products];
-      });
-    } catch (err) {
-      setError("Unable to load products. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [searchTerm, activeCategory]
+  );
+  useEffect(() => {
+    setProducts([]);
+    setPage(1);
+    setHasMore(true);
+  }, [searchTerm, activeCategory]);
 
   // for initial load / pagination effect
   useEffect(() => {

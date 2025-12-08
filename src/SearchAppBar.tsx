@@ -7,6 +7,8 @@ import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
 import { Badge } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useEffect, useState } from "react";
+import { useDebounce } from "./hooks/useDebounce";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -54,11 +56,29 @@ export default function SearchAppBar({
   quantity,
   price,
   onCartIconClick,
+  initialSearchTerm,
+  onSearchChange,
 }: {
   quantity: number;
   price: number;
   onCartIconClick: () => void;
+  initialSearchTerm: string;
+  onSearchChange: (searchTerm: string) => void;
 }) {
+  const [inputTerm, setInputTerm] = useState(initialSearchTerm);
+
+  const debouncedTerm = useDebounce(inputTerm, 500);
+  useEffect(() => {
+    setInputTerm(initialSearchTerm);
+  }, [initialSearchTerm]);
+
+  useEffect(() => {
+    onSearchChange(debouncedTerm);
+  }, [debouncedTerm, onSearchChange]);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputTerm(event.target.value);
+  };
   return (
     <Box>
       <AppBar position="relative">
@@ -78,6 +98,8 @@ export default function SearchAppBar({
             <StyledInputBase
               placeholder="Search…"
               inputProps={{ "aria-label": "search" }}
+              value={inputTerm}
+              onChange={handleInputChange}
             />
           </Search>
           <Box display="flex" flexDirection="row" mx={2}>

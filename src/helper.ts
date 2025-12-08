@@ -2,6 +2,7 @@ import { ShippingDetails } from "./Step2ShippingDetails";
 export const STORAGE_KEY = "checkout_shipping_details";
 export const PHONE_BASE_PREFIX = "87";
 export const PHONE_TOTAL_DIGITS = 11;
+
 export const isExpired = (expiry: string): boolean => {
   if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
     return false;
@@ -62,4 +63,11 @@ export const validateShippingDetails = (details: ShippingDetails): boolean => {
     strippedPhone.startsWith(PHONE_BASE_PREFIX);
 
   return baseValid && isPostalCodeValid && isPhoneValid;
+};
+export const getFiltersFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    searchTerm: params.get("q") || "",
+    activeCategory: params.get("category") || "",
+  };
 };

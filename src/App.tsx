@@ -2,8 +2,9 @@ import { Cart, Products } from "./Products.tsx";
 import { Box, Button, CssBaseline } from "@mui/material";
 import SearchAppBar from "./SearchAppBar.tsx";
 import { Categories } from "./Categories.tsx";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Checkout } from "./Checkout.tsx";
+import { getFiltersFromUrl } from "./helper.ts";
 
 function App() {
   const [cart, setCart] = useState<Cart>({
@@ -12,6 +13,8 @@ function App() {
     totalItems: 0,
   });
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("");
 
   const fetchCart = useCallback(async () => {
     try {
@@ -25,12 +28,30 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+  const currentFilters = useMemo(
+    () => ({
+      searchTerm,
+      activeCategory,
+    }),
+    [searchTerm, activeCategory]
+  );
+
   function onCartChange(cart: Cart) {
     setCart(cart);
   }
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm("");
+    setActiveCategory("");
+  }, []);
+
+  const handleCategorySelect = useCallback((category: string) => {
+    setActiveCategory(category);
+  }, []);
+
+  const handleSearchChange = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
+
   function handleCheckoutClick() {
     if (cart.totalItems > 0) {
       setIsCheckingOut(true);
@@ -38,6 +59,27 @@ function App() {
       alert("Your cart is empty! Add items before checking out.");
     }
   }
+
+  useEffect(() => {
+    const initialFilters = getFiltersFromUrl();
+    setSearchTerm(initialFilters.searchTerm);
+    setActiveCategory(initialFilters.activeCategory);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.set("q", searchTerm);
+    }
+    if (activeCategory) {
+      params.set("category", activeCategory);
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+  }, [searchTerm, activeCategory]);
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <CssBaseline />
@@ -45,15 +87,22 @@ function App() {
         quantity={cart.totalItems}
         price={cart.totalPrice}
         onCartIconClick={handleCheckoutClick}
+        initialSearchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
       />
 
       <Box flex={1} display="flex" flexDirection="row" overflow="hidden">
-        <Categories />
+        <Categories
+          activeCategory={activeCategory}
+          onCategorySelect={handleCategorySelect}
+          onClearFilters={handleClearFilters}
+          searchTerm={searchTerm}
+        />
         <Box flex={1} overflow="auto">
           {isCheckingOut ? (
             <Checkout cart={cart} onCartUpdate={onCartChange} />
           ) : (
-            <Products onCartChange={onCartChange} />
+            <Products onCartChange={onCartChange} filters={currentFilters} />
           )}
         </Box>
       </Box>
