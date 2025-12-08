@@ -5,7 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge } from '@mui/material';
+import { Badge, IconButton } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const Search = styled('div')(({ theme }) => ({
@@ -54,11 +54,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function SearchAppBar({
     quantity,
     price,
-    onSearchChange
+    onSearchChange,
+    onCartClick
 }: {
     quantity: number;
     price: number;
     onSearchChange: (value: string) => void;
+    onCartClick?: () => void;
 }) {
     return (
         <Box>
@@ -90,9 +92,15 @@ export default function SearchAppBar({
                             $ {(price || 0).toFixed(2)}
                         </Typography>
                     </Box>
-                    <Badge badgeContent={quantity || 0} color="secondary">
-                        <ShoppingCartIcon />
-                    </Badge>
+                    <IconButton
+                        onClick={onCartClick}
+                        aria-label={`Shopping cart with ${quantity || 0} items`}
+                        sx={{ color: 'inherit' }}
+                    >
+                        <Badge badgeContent={quantity || 0} color="secondary">
+                            <ShoppingCartIcon />
+                        </Badge>
+                    </IconButton>
                 </Toolbar>
             </AppBar>
         </Box>

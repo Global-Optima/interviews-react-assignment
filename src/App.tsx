@@ -6,6 +6,7 @@ import { FilterBar, SortSelect, PriceRangeFilter } from './components/filters';
 import { useState, useCallback, useEffect } from 'react';
 import { useDebounce, useUrlState } from './hooks';
 import { SortOption } from './hooks/useProducts';
+import { CheckoutWizard } from './components/checkout';
 
 function App() {
   const [cart, setCart] = useState<Cart>();
@@ -15,6 +16,7 @@ function App() {
   const [sortBy, setSortBy] = useUrlState('sortBy', '');
   const [minPriceStr, setMinPriceStr] = useUrlState('minPrice', '');
   const [maxPriceStr, setMaxPriceStr] = useUrlState('maxPrice', '');
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -60,6 +62,14 @@ function App() {
     setMaxPriceStr(value !== null ? value.toString() : '');
   }, [setMaxPriceStr]);
 
+  const handleCartClick = useCallback(() => {
+    setCheckoutOpen(true);
+  }, []);
+
+  const handleCheckoutClose = useCallback(() => {
+    setCheckoutOpen(false);
+  }, []);
+
   return (
     <Box height="100vh" display="flex" flexDirection="column">
       <CssBaseline />
@@ -67,6 +77,7 @@ function App() {
         quantity={cart?.totalItems || 0}
         price={cart?.totalPrice || 0}
         onSearchChange={setSearchTerm}
+        onCartClick={handleCartClick}
       />
       <FilterBar
         searchTerm={debouncedSearchTerm}
@@ -104,8 +115,15 @@ function App() {
           />
         </Box>
       </Box>
+      <CheckoutWizard
+        open={checkoutOpen}
+        onClose={handleCheckoutClose}
+        cart={cart || null}
+        onCartChange={onCartChange}
+      />
     </Box>
   );
 }
 
 export default App;
+
