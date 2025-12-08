@@ -6,7 +6,7 @@ import { Categories } from './Categories.tsx';
 import { FilterBar } from './FilterBar.tsx';
 import { SortSelect } from './SortSelect.tsx';
 import { PriceRangeFilter } from './PriceRangeFilter.tsx';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDebounce } from './hooks/useDebounce.ts';
 import { useUrlState } from './hooks/useUrlState.ts';
 import { SortOption } from './hooks/useProducts.ts';
@@ -24,6 +24,12 @@ function App() {
 
   const minPrice = minPriceStr ? parseFloat(minPriceStr) : null;
   const maxPrice = maxPriceStr ? parseFloat(maxPriceStr) : null;
+
+  useEffect(() => {
+    fetch('/cart')
+      .then((response) => response.json())
+      .then((data) => setCart(data));
+  }, []);
 
   function onCartChange(cart: Cart) {
     setCart(cart);
