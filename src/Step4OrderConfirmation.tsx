@@ -92,13 +92,12 @@ export const Step4OrderConfirmation = ({
             <Typography variant="subtitle1" fontWeight="bold">
               Shipping Address:
             </Typography>
-            <Typography>
-              {shipping.fullName} ({shipping.phone})
-            </Typography>
-            <Typography>{shipping.address}</Typography>
+            <Typography>{shipping.fullName}</Typography>
+            <Typography>{shipping.phone}</Typography>
             <Typography>
               {shipping.city}, {shipping.postalCode}
             </Typography>
+            <Typography>{shipping.address}</Typography>
             <Typography variant="body2" color="text.secondary" mt={1}>
               Delivery Slot: {shipping.timeSlot}
             </Typography>

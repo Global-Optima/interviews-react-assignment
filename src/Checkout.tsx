@@ -9,25 +9,22 @@ import {
   Paper,
   CircularProgress,
 } from "@mui/material";
-import { Cart } from "./Products"; // Assuming Product and Cart are exported from Products.tsx
+import { Cart } from "./Products";
 
-// Step Components
 import { Step1CartReview } from "./Step1CartReview";
-import {
-  Step2ShippingDetails,
-  ShippingDetails,
-  saveShippingDetails,
-  loadShippingDetails,
-  validateShippingDetails,
-} from "./Step2ShippingDetails";
+import { Step2ShippingDetails, ShippingDetails } from "./Step2ShippingDetails";
 
 import {
   Step3PaymentMethod,
   validatePaymentDetails,
 } from "./Step3PaymentMethod";
 import { Step4OrderConfirmation } from "./Step4OrderConfirmation";
+import {
+  loadShippingDetails,
+  saveShippingDetails,
+  validateShippingDetails,
+} from "./helper";
 
-// Define the structure for payment details
 export type PaymentDetails = {
   method: "Credit Card" | "PayPal" | "Cash on Delivery" | "";
   cardNumber: string;
@@ -44,7 +41,7 @@ const steps = [
 
 export const Checkout = ({
   cart,
-  onCartUpdate, // Function to update cart in parent/global state
+  onCartUpdate,
 }: {
   cart: Cart;
   onCartUpdate: (newCart: Cart) => void;
@@ -64,11 +61,10 @@ export const Checkout = ({
   >("idle");
   const [orderMessage, setOrderMessage] = useState<string>("");
 
-  // --- Calculations ---
   const subtotal = useMemo(() => cart.totalPrice, [cart.totalPrice]);
   const tax = useMemo(() => subtotal * 0.1, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
-  // --- Step Validation ---
+
   const isStepValid = useMemo(() => {
     switch (activeStep) {
       case 0:
@@ -78,24 +74,23 @@ export const Checkout = ({
       case 2:
         return validatePaymentDetails(paymentDetails);
       case 3:
-        return cart.totalItems > 0; // Should be valid if we reached here
+        return cart.totalItems > 0;
       default:
         return false;
     }
   }, [activeStep, cart.totalItems, shippingDetails, paymentDetails]);
 
-  // --- Navigation Handlers ---
   const handleNext = useCallback(() => {
     if (isStepValid) {
       if (activeStep === 1) {
-        saveShippingDetails(shippingDetails); // Persist details on 'Next' from step 2
+        saveShippingDetails(shippingDetails);
       }
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   }, [activeStep, isStepValid, shippingDetails]);
 
   const handleBack = useCallback(() => {
-    setOrderStatus("idle"); // Clear status on back navigation
+    setOrderStatus("idle");
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   }, []);
 
@@ -137,10 +132,9 @@ export const Checkout = ({
     }
   }, [cart.totalItems, onCartUpdate]);
   const handleRetryOrder = useCallback(() => {
-    handlePlaceOrder(); // Simply retry the order placement
+    handlePlaceOrder();
   }, [handlePlaceOrder]);
 
-  // --- Render Current Step Content ---
   const getStepContent = (step: number) => {
     switch (step) {
       case 0:
@@ -150,7 +144,7 @@ export const Checkout = ({
             subtotal={subtotal}
             tax={tax}
             total={total}
-            onCartUpdate={onCartUpdate} // To allow editing/removing items
+            onCartUpdate={onCartUpdate}
           />
         );
       case 1:
@@ -190,10 +184,9 @@ export const Checkout = ({
   return (
     <Box p={2} maxWidth="900px" mx="auto">
       <Typography variant="h4" gutterBottom>
-        🛒 Checkout Wizard
+        🛒 Checkout
       </Typography>
 
-      {/* Progress Indicator */}
       <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -205,7 +198,6 @@ export const Checkout = ({
         {getStepContent(activeStep)}
       </Paper>
 
-      {/* Navigation and Actions */}
       <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
         {activeStep !== 0 && activeStep !== steps.length && (
           <Button

@@ -18,7 +18,6 @@ const mockCartUpdate = (
   productId: number,
   quantityChange: number
 ): Cart => {
-  // Find the index of the item being updated
   const itemIndex = currentCart.items.findIndex(
     (item) => item.id === productId
   );
@@ -139,7 +138,7 @@ export const Step1CartReview = ({
   onCartUpdate: (newCart: Cart) => void;
 }) => {
   const handleUpdate = (productId: number, quantityChange: number) => {
-    // in a real app, this would call the /cart for this challenge, we mock the local state update
+    // in a real app, this would call the /cart for this, we mock the local state update
     const newCart = mockCartUpdate(cart, productId, quantityChange);
     onCartUpdate(newCart);
   };

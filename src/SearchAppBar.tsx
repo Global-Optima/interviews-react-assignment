@@ -39,7 +39,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   width: "100%",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     [theme.breakpoints.up("sm")]: {
@@ -92,8 +91,8 @@ export default function SearchAppBar({
           <Badge
             badgeContent={quantity || 0}
             color="secondary"
-            onClick={onCartIconClick} // ⭐️ Attach handler here
-            sx={{ cursor: "pointer" }} // Visual hint for clickability
+            onClick={onCartIconClick}
+            sx={{ cursor: "pointer" }}
           >
             <ShoppingCartIcon aria-label="Go to checkout" />
           </Badge>

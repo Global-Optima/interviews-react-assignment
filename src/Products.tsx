@@ -154,7 +154,6 @@ export const Products = ({
       if (data.products.length < ITEMS_PER_PAGE) {
         setHasMore(false); // no items to show
       }
-
       setProducts((prev) => {
         const newIds = new Set(data.products.map((p: Product) => p.id));
         const filteredPrev = prev.filter((p) => !newIds.has(p.id));
