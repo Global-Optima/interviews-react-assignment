@@ -110,7 +110,7 @@ I decided to use context for cart, as it should be global and either way connect
 - UX polish
 
 **Completion** 
-I moved categories and search inside the shop page, because they belong specifically there and to avoid creating more context for them. (locallity )
+I moved categories and search inside the shop page, because they belong specifically there and to avoid creating more context for them. (locallity)
 
 Search and Categories features could be implemented with Generics to apply to any type of data and moved to a separate feature. (more reusable, but less customizable). But I decided to make it domain-specific (products) and make it part of product logic for better customization in future. 
 
@@ -129,7 +129,7 @@ Added slider for price range + made it work with urls
 **Your Tasks**:
 1. **Fix the rendering performance** (hint: memoization, virtualization)
    - ⚠️ Do NOT remove `HeavyComponent`—optimize around it
-2. **Fix the cart update bug** (line 59: stale closure issue)
+2. **Fix the cart update bug** (line 59: stale closure issue) x
 3. Implement **optimistic UI updates** for add/remove cart actions
 4. Prevent unnecessary re-renders
 5. **Provide proof** of performance improvements (screenshots, metrics, profiler data)
@@ -142,6 +142,11 @@ Added slider for price range + made it work with urls
 - Understanding of React rendering behavior
 - Profiling and measurement skills
 - Real-world performance optimization techniques
+
+**Completion** 
+Split ShopPage into 3 parts - searchBar, Categories and ProductList. This allows them to memoize more precisely. 
+
+Created custom memo for ProductList as it uses references (arrays) to improve performance. 
 
 ---
 
@@ -196,6 +201,7 @@ Build a **4-step checkout wizard**:
 - Validation strategy
 - UX and accessibility
 - Error handling
+
 
 ---
 

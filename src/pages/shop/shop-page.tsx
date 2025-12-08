@@ -1,62 +1,66 @@
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import {
-  Box,
-  CircularProgress,
-  Divider,
-  Grid,
-  IconButton,
-  Slider,
-  Typography
-} from "@mui/material";
-import { Categories } from "../../Categories";
-import { useCart } from "../../features/cart/hooks/use-cart";
-import { useCategories } from "../../features/products/hooks/use-categories";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { Box, Divider, IconButton, Slider, Typography } from "@mui/material";
 import { useInfiniteProducts } from "../../features/products/hooks/use-infinite-products";
 import { usePriceRange } from "../../features/products/hooks/use-price-range";
 import { useProductSearch } from "../../features/products/hooks/use-product-search";
-import { ProductCard } from "../../features/products/ui/product-card";
-import { ProductSearchBar } from '../../features/products/ui/product-search-bar';
-    
+import { ProductList } from "../../features/products/ui/product-list";
+import { ProductSearchBar } from "../../features/products/ui/product-search-bar";
+import { useCategories } from "../../features/products/hooks/use-categories";
+import { Categories } from "../../features/products/ui/Categories";
+import { useCallback } from "react";
+
 const marks = [
   {
     value: 0,
-    label: '$0'
+    label: "$0",
   },
   {
     value: 2500,
-    label: '$2,500'
+    label: "$2,500",
   },
   {
     value: 5000,
-    label: '$5,000'
+    label: "$5,000",
   },
 ];
 
 export const ShopPage = () => {
   const { products, loading, allFetched, elementRef } = useInfiniteProducts();
-  const { addToCart, isProductLoading, getProductQuantity } = useCart();
-  
   const { searchValue, setSearchValue, searchedProducts } = useProductSearch({
     unsearchedProducts: products,
   });
-  
-  const { categories, toggleCategory, filteredProducts: categoryFilteredProducts, setCategories } =
-    useCategories({ unfilteredProducts: searchedProducts });
-  
-  const { 
-    priceRange, 
-    filteredProducts: priceFilteredProducts, 
+
+  const {
+    categories,
+    toggleCategory,
+    filteredProducts: categoryFilteredProducts,
+    setCategories,
+  } = useCategories({ unfilteredProducts: searchedProducts });
+
+  const {
+    priceRange,
+    filteredProducts: priceFilteredProducts,
     handlePriceChange,
-    setPriceRange
-  } = usePriceRange({ 
+    setPriceRange,
+  } = usePriceRange({
     products: categoryFilteredProducts,
     initialMin: 0,
-    initialMax: 5000
+    initialMax: 5000,
   });
 
   const handleResetPriceRange = () => {
     setPriceRange([0, 5000]);
   };
+
+  const handleCategorySelect = useCallback(
+    (selectedCategory: string) => toggleCategory(selectedCategory),
+    [toggleCategory]
+  );
+
+  const handleCategoryClear = useCallback(
+    () => setCategories([]),
+    [setCategories]
+  );
 
   return (
     <Box>
@@ -72,27 +76,25 @@ export const ShopPage = () => {
       >
         <Categories
           categories={categories}
-          onCategorySelect={(selectedCategory) =>
-            toggleCategory(selectedCategory)
-          }
-          onCategoryClear={() => setCategories([])}
+          onCategorySelect={handleCategorySelect}
+          onCategoryClear={handleCategoryClear}
         />
         <Box flex={1} display="flex" flexDirection="column">
           <Box display="flex" gap={1} p={2}>
-            <Box 
-              display="flex" 
-              justifyContent="center" 
-              alignItems="center" 
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
               width={200}
             >
               Total products: {priceFilteredProducts.length}
             </Box>
             <Divider orientation="vertical" />
-            <Box 
-              width={400} 
-              display="flex" 
-              gap={3} 
-              justifyContent="center" 
+            <Box
+              width={400}
+              display="flex"
+              gap={3}
+              justifyContent="center"
               alignItems="center"
             >
               <Typography>Price range:</Typography>
@@ -106,14 +108,12 @@ export const ShopPage = () => {
                 marks={marks}
               />
               <IconButton
-              style={{marginBottom: 15}}
+                style={{ marginBottom: 15 }}
                 children={<RestartAltIcon />}
                 onClick={handleResetPriceRange}
-              >
-              </IconButton>
+              ></IconButton>
             </Box>
           </Box>
-
           <Box
             flex={1}
             ref={elementRef}
@@ -122,59 +122,13 @@ export const ShopPage = () => {
               paddingRight: 2,
             }}
           >
-            <Grid container spacing={2} p={2}>
-              {priceFilteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={(quantity) => {
-                    addToCart(product.id, quantity);
-                  }}
-                  isLoading={isProductLoading(product.id)}
-                  cartQuantity={getProductQuantity(product.id)}
-                />
-              ))}
-
-              {loading && (
-                <Grid
-                  item
-                  xs={4}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <CircularProgress />
-                </Grid>
-              )}
-
-              {allFetched && !searchValue && (
-                <Grid
-                  item
-                  xs={12}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Typography variant="body1" my={2}>
-                    All products are loaded.
-                  </Typography>
-                </Grid>
-              )}
-
-              {searchValue && searchedProducts.length === 0 && !loading && (
-                <Grid
-                  item
-                  xs={12}
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Typography variant="body1" my={2}>
-                    No products found for "{searchValue}"
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
+            <ProductList
+              products={priceFilteredProducts}
+              loading={loading}
+              allFetched={allFetched}
+              searchValue={searchValue}
+              searchedProducts={searchedProducts}
+            />
           </Box>
         </Box>
       </Box>

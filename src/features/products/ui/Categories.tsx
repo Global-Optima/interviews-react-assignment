@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Divider,
   List,
   ListItem,
@@ -28,10 +27,10 @@ interface CategoriesProps {
   onCategoryClear?: () => void;
 }
 
-export const Categories = memo(({
+export const CategoriesComponent = ({
   categories,
   onCategorySelect,
-  onCategoryClear
+  onCategoryClear,
 }: CategoriesProps) => {
   return (
     <Box minWidth={drawerWidth} sx={{ borderRight: "1px solid grey" }}>
@@ -44,7 +43,7 @@ export const Categories = memo(({
                 backgroundColor: categories.includes(text)
                   ? "dodgerblue"
                   : "white",
-                color: categories.includes(text) ? "white" : "black"
+                color: categories.includes(text) ? "white" : "black",
               }}
             >
               <ListItemText primary={text} />
@@ -53,7 +52,20 @@ export const Categories = memo(({
         ))}
       </List>
       <Divider></Divider>
-    <ListItemButton onClick={() => onCategoryClear?.()} style={{color: 'dodgerblue'}}>Clear All</ListItemButton>
+      <ListItemButton
+        onClick={() => onCategoryClear?.()}
+        style={{ color: "dodgerblue" }}
+      >
+        Clear All
+      </ListItemButton>
     </Box>
   );
-});  
+};
+
+export const Categories = memo(CategoriesComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.categories === nextProps.categories &&
+    prevProps.onCategorySelect === nextProps.onCategorySelect &&
+    prevProps.onCategoryClear === nextProps.onCategoryClear
+  );
+});
