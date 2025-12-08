@@ -29,9 +29,9 @@ function App() {
       .then((data) => setCart(data));
   }, []);
 
-  function onCartChange(cart: Cart) {
+  const onCartChange = useCallback((cart: Cart) => {
     setCart(cart);
-  }
+  }, []);
 
   const handleClearSearch = useCallback(() => {
     setSearchTerm('');

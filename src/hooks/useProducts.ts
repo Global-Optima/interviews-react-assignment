@@ -31,6 +31,9 @@ export function useProducts({ searchTerm, category, sortBy = '', minPrice = null
     const fetchProducts = useCallback(async () => {
         if (loading || !hasMore) return;
 
+        const controller = new AbortController();
+        const signal = controller.signal;
+
         setLoading(true);
         try {
             const queryParams = new URLSearchParams({
@@ -48,7 +51,7 @@ export function useProducts({ searchTerm, category, sortBy = '', minPrice = null
                 queryParams.set('maxPrice', maxPrice.toString());
             }
 
-            const response = await fetch(`/products?${queryParams.toString()}`);
+            const response = await fetch(`/products?${queryParams.toString()}`, { signal });
             const data = await response.json();
 
             if (data.products.length < limit) {
@@ -70,11 +73,18 @@ export function useProducts({ searchTerm, category, sortBy = '', minPrice = null
 
             setPage(prev => prev + 1);
         } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') {
+                return;
+            }
             console.error('Error fetching products:', err);
             setError('Failed to load products. Please try again.');
         } finally {
-            setLoading(false);
+            if (!signal.aborted) {
+                setLoading(false);
+            }
         }
+
+        return () => controller.abort();
     }, [page, loading, hasMore, searchTerm, category, sortBy, minPrice, maxPrice]);
 
     useEffect(() => {

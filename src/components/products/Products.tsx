@@ -1,6 +1,7 @@
-import { Box, CircularProgress, Grid, Typography, Button, Alert } from '@mui/material';
+import { Box, CircularProgress, Typography, Button, Alert, useTheme, useMediaQuery } from '@mui/material';
 import { useEffect, useCallback, useRef } from 'react';
-import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
+import { FixedSizeGrid as Grid, GridChildComponentProps } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { useProducts, SortOption } from '../../hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { Cart } from '../../types';
@@ -31,16 +32,17 @@ export const Products = ({
         minPrice,
         maxPrice
     });
-    const [targetRef, isIntersecting] = useIntersectionObserver();
+
+    const theme = useTheme();
+    const isSm = useMediaQuery(theme.breakpoints.up('sm'));
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));
+    const columnCount = isMd ? 3 : isSm ? 2 : 1;
+    const gutter = 16;
 
     const onCartChangeRef = useRef(onCartChange);
-    onCartChangeRef.current = onCartChange;
-
     useEffect(() => {
-        if (isIntersecting && hasMore && !loading && !error) {
-            loadMore();
-        }
-    }, [isIntersecting, hasMore, loading, error, loadMore]);
+        onCartChangeRef.current = onCartChange;
+    }, [onCartChange]);
 
     useEffect(() => {
         onTotalCountChange?.(totalCount);
@@ -68,6 +70,7 @@ export const Products = ({
             .then(async response => {
                 if (response.ok) {
                     const cart = await response.json();
+
                     setProducts(prev => prev.map(product => {
                         if (product.id === productId) {
                             return {
@@ -77,6 +80,7 @@ export const Products = ({
                         }
                         return product;
                     }));
+
                     onCartChangeRef.current(cart);
                 } else {
                     throw new Error('Failed to update cart');
@@ -100,6 +104,28 @@ export const Products = ({
         resetError();
         loadMore();
     }, [resetError, loadMore]);
+
+    const Cell = ({ columnIndex, rowIndex, style, data }: GridChildComponentProps) => {
+        const { products, columnCount } = data;
+        const index = rowIndex * columnCount + columnIndex;
+        const product = products[index];
+
+        if (!product) return null;
+
+        const left = parseFloat(style.left?.toString() || '0') + gutter;
+        const top = parseFloat(style.top?.toString() || '0') + gutter;
+        const width = parseFloat(style.width?.toString() || '0') - gutter;
+        const height = parseFloat(style.height?.toString() || '0') - gutter;
+
+        return (
+            <div style={{ ...style, left, top, width, height }}>
+                <ProductCard
+                    product={product}
+                    onAddToCart={addToCart}
+                />
+            </div>
+        );
+    };
 
     if (error && products.length === 0) {
         return (
@@ -131,7 +157,7 @@ export const Products = ({
     const showEmptyState = !loading && products.length === 0 && !error;
 
     return (
-        <Box overflow="auto" height="100%">
+        <Box height="100%" width="100%" p={0}>
             {showEmptyState ? (
                 <Box
                     display="flex"
@@ -152,40 +178,43 @@ export const Products = ({
                     </Typography>
                 </Box>
             ) : (
-                <>
-                    <Grid container spacing={2} p={2}>
-                        {products.map(product => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                onAddToCart={addToCart}
-                            />
-                        ))}
-                    </Grid>
+                <AutoSizer>
+                    {({ height, width }) => {
+                        const rowCount = Math.ceil(products.length / columnCount);
+                        const itemHeight = 350;
 
-                    {error && products.length > 0 && (
-                        <Box display="flex" flexDirection="column" alignItems="center" p={2}>
-                            <Alert severity="error" sx={{ mb: 1 }}>
-                                {error}
-                            </Alert>
-                            <Button
-                                size="small"
-                                startIcon={<RefreshIcon />}
-                                onClick={handleRetry}
+                        return (
+                            <Grid
+                                columnCount={columnCount}
+                                columnWidth={(width - gutter) / columnCount}
+                                height={height}
+                                rowCount={rowCount}
+                                rowHeight={itemHeight}
+                                width={width}
+                                itemData={{ products, columnCount }}
+                                onItemsRendered={({ visibleRowStopIndex }) => {
+                                    if (visibleRowStopIndex >= rowCount - 2 && hasMore && !loading) {
+                                        loadMore();
+                                    }
+                                }}
                             >
-                                Retry
-                            </Button>
-                        </Box>
-                    )}
-
-                    {loading && (
-                        <Box display="flex" justifyContent="center" p={2}>
-                            <CircularProgress />
-                        </Box>
-                    )}
-                </>
+                                {Cell}
+                            </Grid>
+                        );
+                    }}
+                </AutoSizer>
             )}
-            <div ref={targetRef} style={{ height: 20 }} />
+            {loading && products.length === 0 && (
+                <Box display="flex" justifyContent="center" p={2} position="absolute" top="50%" left="50%">
+                    <CircularProgress />
+                </Box>
+            )}
+            {error && products.length > 0 && (
+                <Box position="absolute" bottom={20} left="50%" sx={{ transform: 'translateX(-50%)' }} bgcolor="background.paper" p={2} borderRadius={1} boxShadow={3}>
+                    <Typography color="error" variant="body2">{error}</Typography>
+                    <Button size="small" onClick={handleRetry}>Retry</Button>
+                </Box>
+            )}
         </Box>
     );
 };
