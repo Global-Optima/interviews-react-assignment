@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import { SortOption } from './hooks/useProducts';
+import { SortOption } from '../../hooks/useProducts';
 
 interface SortSelectProps {
     value: SortOption;

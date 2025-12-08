@@ -1,15 +1,11 @@
-import { Products } from './Products.tsx';
-import { Cart } from './types.ts';
+import { Products } from './components/products';
+import { Cart } from './types';
 import { Box, CssBaseline } from '@mui/material';
-import SearchAppBar from './SearchAppBar.tsx';
-import { Categories } from './Categories.tsx';
-import { FilterBar } from './FilterBar.tsx';
-import { SortSelect } from './SortSelect.tsx';
-import { PriceRangeFilter } from './PriceRangeFilter.tsx';
+import { SearchAppBar, Categories } from './components/layout';
+import { FilterBar, SortSelect, PriceRangeFilter } from './components/filters';
 import { useState, useCallback, useEffect } from 'react';
-import { useDebounce } from './hooks/useDebounce.ts';
-import { useUrlState } from './hooks/useUrlState.ts';
-import { SortOption } from './hooks/useProducts.ts';
+import { useDebounce, useUrlState } from './hooks';
+import { SortOption } from './hooks/useProducts';
 
 function App() {
   const [cart, setCart] = useState<Cart>();

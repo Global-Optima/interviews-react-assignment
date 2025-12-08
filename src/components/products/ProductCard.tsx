@@ -12,8 +12,8 @@ import {
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import { memo } from 'react';
-import { HeavyComponent } from './HeavyComponent';
-import { Product } from './types';
+import { HeavyComponent } from '../common';
+import { Product } from '../../types';
 
 interface ProductCardProps {
     product: Product;
