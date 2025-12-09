@@ -42,7 +42,10 @@ export const Products = React.memo(({
   const topPadding = Math.floor(start / itemsPerRow) * CARD_HEIGHT;
   const bottomPadding = Math.ceil((products.length - end) / itemsPerRow) * CARD_HEIGHT;
 
-  const onScroll = (container: HTMLDivElement) => {
+  const onScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const scrollTop = container.scrollTop;
     const viewHeight = container.clientHeight;
 
@@ -61,9 +64,8 @@ export const Products = React.memo(({
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    onScroll(container);
-    container.addEventListener("scroll", () => onScroll(container));
-    return () => container.removeEventListener("scroll", () => onScroll(container));
+    container.addEventListener("scroll", onScroll);
+    return () => container.removeEventListener("scroll", onScroll);
   }, [products.length, itemsPerRow]);
 
   return (
@@ -73,9 +75,9 @@ export const Products = React.memo(({
         {visibleProducts.map((product) => {
           return (
             <Grid item xs={12 / itemsPerRow} key={product.id}>
+              <ProductItem addToCart={addToCart} product={product}/>
               {/* Do not remove this */}
               <HeavyComponent/>
-              <ProductItem addToCart={addToCart} product={product}/>
             </Grid>
         )})}
       </Grid>

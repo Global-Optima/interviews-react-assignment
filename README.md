@@ -41,17 +41,18 @@ pnpm lint
    ![Screenshot](screenshots/ss-before.png)
    ![Screenshot](screenshots/ss-after.png)
 
-   Faster loading (LCP improved): The largest visible content now appears sooner, making the initial page load feel quicker.
+   INP has been significantly improved to ensure faster and more responsive user interactions. However, this optimization required trade-offs that temporarily increased the CLS score. The priority was to enhance input responsiveness first.
 
-   Better responsiveness (INP improved): User interactions such as clicking and scrolling respond faster due to reduced JavaScript blocking and optimized state updates.
-
-## How to test my features
+## How to test the features
 Fetching products fails:
    Uncomment the block in onLoadMore function for it to randomly throw errors and try to fetch again.
+
 Clear filter functionality:
    To see clear filter functionality simply select some category and type something in search input.
+
 Cart works correctly now:
    Add or subsctract items by pressing "+" or "-", and see the cart updates.
+
 Cancellable requests:
    Press fast on some category and see how the requests cancel in the dev tools.
  

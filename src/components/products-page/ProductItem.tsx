@@ -6,7 +6,6 @@ import {
   CardMedia,
   IconButton,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 import React from "react";
 import RemoveIcon from "@mui/icons-material/Remove";
