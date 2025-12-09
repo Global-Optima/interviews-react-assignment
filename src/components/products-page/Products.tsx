@@ -9,7 +9,7 @@ import { HeavyComponent } from '../HeavyComponent.tsx';
 import { UpdateSharp } from '@mui/icons-material';
 import ProductItem from './ProductItem.tsx';
 import { Product } from '../../App.tsx';
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 
 export interface ProductsProps {
   products: Product[];
@@ -64,48 +64,70 @@ export const Products = React.memo(({
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    onScroll();
+    container.removeEventListener("scroll", onScroll);
     container.addEventListener("scroll", onScroll);
     return () => container.removeEventListener("scroll", onScroll);
   }, [products.length, itemsPerRow]);
 
   return (
     <Box ref={containerRef} sx={{overflowY: "scroll", width: "100%"}} height="100%">
-      <Box style={{ height: topPadding }} />
-      <Grid container spacing={2} p={2}>
-        {visibleProducts.map((product) => {
-          return (
-            <Grid item xs={12 / itemsPerRow} key={product.id}>
-              <ProductItem addToCart={addToCart} product={product}/>
-              {/* Do not remove this */}
-              <HeavyComponent/>
-            </Grid>
-        )})}
-      </Grid>
-      <Box style={{ height: bottomPadding }} />
-      {
-        fetchErrored && !isLoading &&
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            mb={40}
-          >
-            <Typography color="error" mb={1} textAlign="center">
-              Fetching products errored
-            </Typography>
-            <Button startIcon={<UpdateSharp/>} variant="text" color="error" onClick={() => loadMore()}>
-              Try again
-            </Button>
-          </Box>
-      }
-      {
-        isLoading && 
-          <Box display="flex" justifyContent="center" mb={40}>
-            <CircularProgress />
-          </Box>
-      }
-      { products.length !== 0 && <Box ref={loaderRef} sx={{height: 50}} display="flex"/> }
+      {products.length === 0 && !isLoading && !fetchErrored ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+          p={4}
+        >
+          <Typography variant="h6" color="text.secondary" textAlign="center">
+            No products found.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Try adjusting your filters or search criteria.
+          </Typography>
+        </Box>
+      ) : (
+        <Fragment>
+          <Box style={{ height: topPadding }} />
+          <Grid container spacing={2} p={2}>
+            {visibleProducts.map((product) => {
+              return (
+                <Grid item xs={12 / itemsPerRow} key={product.id}>
+                  <ProductItem addToCart={addToCart} product={product}/>
+                  {/* Do not remove this */}
+                  <HeavyComponent/>
+                </Grid>
+            )})}
+          </Grid>
+          <Box style={{ height: bottomPadding }} />
+          {
+            fetchErrored && !isLoading &&
+              <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                mb={40}
+              >
+                <Typography color="error" mb={1} textAlign="center">
+                  Fetching products errored
+                </Typography>
+                <Button startIcon={<UpdateSharp/>} variant="text" color="error" onClick={() => loadMore()}>
+                  Try again
+                </Button>
+              </Box>
+          }
+          {
+            isLoading && 
+              <Box display="flex" justifyContent="center" mb={40}>
+                <CircularProgress />
+              </Box>
+          }
+          { products.length !== 0 && <Box ref={loaderRef} sx={{height: 50}} display="flex"/> }
+        </Fragment>
+      )}
     </Box>
   );
 });

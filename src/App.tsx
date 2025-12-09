@@ -6,6 +6,11 @@ import { useEffect, useRef, useState,  } from 'react';
 import { useInfiniteScroll } from './hooks/useInfiniteScroll.ts';
 import { useDebounce } from './hooks/useDebounce.ts';
 import { ProductFilters } from './components/products-page/ProductFilters.tsx';
+import CheckoutWizard from './components/CheckoutWizard.tsx';
+import { motion, AnimatePresence } from "framer-motion";
+import { flushSync } from "react-dom";
+
+export const categories = ['Laptops', 'Smartphones', 'Tablets', 'Accessories', 'Audio', 'Gaming', 'Wearables', 'Cameras'];
 
 export type Product = {
   id: number;
@@ -14,7 +19,6 @@ export type Product = {
   price: number;
   category: string;
   itemInCart: number;
-  loading: boolean;
 }
 
 export type Cart = {
@@ -30,7 +34,6 @@ export interface ProductListParams {
   q?: string,
 }
 
-
 function App() {
   const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef(null);
@@ -42,27 +45,49 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [fetchErrored, setFetchErrored] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [itemsPerRow] = useState(3);
-  const [isLoading, setIsLoading] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, Infinity]);
-  const [sortBy, setSortBy] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [totalResults, setTotalResults] = useState(0);
+  const [itemsPerRow, setItemsPerRow] = useState(() => {
+    const width = window.innerWidth;
+    if (width < 600) return 1;
+    if (width < 900) return 2;
+    return 3;
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const initialPriceRange: [number, number] = (() => {
+    const value = locationParams.get("priceRange");
+    if (!value) return [0, Infinity];
+    try {
+      const arr = JSON.parse(value);
+      if (Array.isArray(arr) && arr.length === 2) {
+        const result = [Number(arr[0]), Number(arr[1])] as [number, number];
+        if (!result.some(isNaN)) return result;
+      }
+      return [0, Infinity];
+    } catch {
+      return [0, Infinity];
+    }
+  })();
+  const [priceRange, setPriceRange] = useState<[number, number]>(initialPriceRange);
+  const [sortBy, setSortBy] = useState<string>(locationParams.get("sortBy") || "name");
+  const initialSortOrder = (() => {
+    const value = locationParams.get("sortOrder");
+    return value === "asc" || value === "desc" ? value : "asc";
+  })();
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(initialSortOrder);
+  const [totalResults, setTotalResults] = useState<number | null>(null);
   const [maxPriceRange, setMaxPriceChange] = useState(0);
+  const [checkoutOpen, setCheckoutOpen] = useState(locationParams.get("checkout") === 'true');
   
   const loadMore = async (replace = false) => {
     if (abortRef.current) {
       abortRef.current.abort();
     }
-
     const controller = new AbortController();
     abortRef.current = controller;
-
     setIsLoading(true);
     if (replace) {
       setProducts([]);
       setPage(0);
-      setTotalResults(0);
+      setTotalResults(null);
     }
     try {
       // 30% error chance uncomment this code to test the retry button feature
@@ -86,19 +111,17 @@ function App() {
       setHasMore(hasMore);
       setMaxPriceChange(Math.max(1000, maxPriceChange));
       setTotalResults(total || 0);
-      setProducts(prev => replace ? newProducts : [...prev, ...newProducts]);
+      flushSync(() => {
+        setProducts(replace ? newProducts : [...products, ...newProducts]);
+      });
+      setIsLoading(false);
       setPage(p => replace ? 1 : p + 1);
       setFetchErrored(false);
     } catch (e: any) {
-      if (e.name === "AbortError") {
-        console.log("Request cancelled due to newer request");
-        return;
-      }
-
+      if (e.name === "AbortError") return;
       console.error("Could not fetch products:", e);
       setFetchErrored(true);
       setHasMore(false);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -110,8 +133,42 @@ function App() {
     containerRef,
   });
 
-  function onCartChange(cart: Cart) {
-    setCart(cart);
+  const updateQuantity = (productId: number, delta: number) => {
+    setCart(p => {
+      const prev: Cart = (!p || Object.keys(p).length === 0) ? {items: [], totalPrice: 0, totalItems: 0} : p;
+      const existingItem = prev.items.find(p => p.id === productId);
+      let newItems: Product[];
+      if (existingItem) {
+        newItems = prev.items.map(p =>
+          p.id === productId ? { ...p, itemInCart: (p.itemInCart || 0) + delta } : p
+        );
+      } else {
+        const productInProducts = products.find(p => p.id === productId);
+        const newItem: Product = productInProducts
+          ? { ...productInProducts, itemInCart: delta }
+          : { id: productId, name: '', imageUrl: '', price: 0, category: '', itemInCart: delta };
+        newItems = [...prev.items, newItem];
+      }
+      const filteredItems = newItems.filter(v => v.itemInCart > 0);
+      const totalItems = filteredItems.reduce((sum, p) => sum + (p.itemInCart || 0), 0);
+      const totalPrice = filteredItems.reduce((sum, p) => sum + (p.price * (p.itemInCart || 0)), 0);
+      return { ...prev, items: filteredItems, totalItems, totalPrice };
+    });
+  }
+
+  function removeItem(id: number) {
+    setCart((p) => {
+        const prev: Cart = (!p || Object.keys(p).length === 0) ? {items: [], totalPrice: 0, totalItems: 0} : p;
+        const filteredItems = prev.items.filter((it) => it.id !== id);
+        const totalItems = filteredItems.reduce((sum, p) => sum + (p.itemInCart || 0), 0);
+        const totalPrice = filteredItems.reduce((sum, p) => sum + (p.price * (p.itemInCart || 0)), 0);
+        return { ...prev, items: filteredItems, totalItems, totalPrice };
+      }
+    );
+  }
+
+  function resetCart() {
+    setCart({items: [], totalPrice: 0, totalItems: 0});
   }
 
   function addToCart(productId: number, quantity: number) {
@@ -126,6 +183,7 @@ function App() {
         return product;
       })
     );
+    updateQuantity(productId, quantity);
     fetch('/cart', {
       method: 'POST',
       headers: {
@@ -135,8 +193,6 @@ function App() {
     })
     .then(async response => {
       if (!response.ok) throw new Error("Failed to update cart");
-      const cart = await response.json();
-      onCartChange(cart);
     })
     .catch(() => {
       setProducts(prev =>
@@ -150,76 +206,146 @@ function App() {
           return product;
         })
       );
+      setCart(prev => {
+        if (!prev) return prev;
+        const newItems = prev.items.map(p =>
+          p.id === productId ? { ...p, itemInCart: (p.itemInCart || 0) - quantity } : p
+        );
+        const totalItems = newItems.reduce((sum, p) => sum + (p.itemInCart || 0), 0);
+        const totalPrice = newItems.reduce((sum, p) => sum + (p.price * (p.itemInCart || 0)), 0);
+        return { ...prev, items: newItems, totalItems, totalPrice };
+      });
     });
   }
 
   useEffect(() => {
-    const filter = new URLSearchParams();
-    if (searchText) filter.set("q", searchText);
-    if (category) filter.set("category", category);
-    const qs = filter.toString();
+    const params = new URLSearchParams();
+    if (searchText) params.set("q", searchText);
+    if (category) params.set("category", category);
+    params.set("checkout", String(checkoutOpen));
+    params.set("sortBy", sortBy);
+    params.set("sortOrder", sortOrder);
+    params.set("priceRange", JSON.stringify(priceRange.map(String)));
+    const qs = params.toString();
     const newUrl = qs ? `?${qs}` : window.location.pathname;
-    window.history.pushState({}, "", newUrl);
-  }, [searchText, category]);
+    window.history.replaceState({}, "", newUrl);
+  }, [searchText, category, checkoutOpen, sortBy, sortOrder, priceRange]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 600) setItemsPerRow(1);
+      else if (width < 900) setItemsPerRow(2);
+      else setItemsPerRow(3);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    fetch('/cart')
+      .then(response => response.json())
+      .then(cart => setCart(cart as Cart));
+  }, []);
 
   const {debounced: debouncedSearch, setDebounced} = useDebounce(searchText, 500);
   const {debounced: debouncedPriceRange, setDebounced: setDebouncedPriceRange} = useDebounce(priceRange, 500);
+  const {debounced: debouncedCheckoutOpen, setDebounced: setDebouncedCheckoutOpen} = useDebounce(checkoutOpen, 500);
+
+  const handleOpenCheckout = () => {
+    setCheckoutOpen(true);
+    setDebouncedCheckoutOpen(true);
+  }
+
+  const handleCloseCheckout= () => {
+    setTotalResults(null);
+    setIsLoading(true);
+    setCheckoutOpen(false);
+  }
 
   useEffect(() => {
-    loadMore(true);
-  }, [category, debouncedSearch, debouncedPriceRange, sortBy, sortOrder]);
+    if (!debouncedCheckoutOpen) loadMore(true);
+  }, [category, debouncedSearch, debouncedPriceRange, sortBy, sortOrder, debouncedCheckoutOpen]);
 
   return (
-    <Box height="100vh" display="flex" flexDirection="column">
+    <Box height="100vh" display="flex" flexDirection="column" overflow="hidden">
       <CssBaseline/>
-      <SearchAppBar searchText={searchText} setSearchText={setSearchText} quantity={cart?.totalItems || 0} price={cart?.totalPrice || 0}/>
-
-      <Box flex={1} display="flex" minHeight={0} flexDirection="row">
-        <Categories category={category} setCategory={setCategory} />
-        <Box flex={1} display="flex" minHeight={0} flexDirection="column">
-        <ProductFilters
-          category={category}
-          searchText={debouncedSearch}
-          priceRange={priceRange}
-          minPrice={priceRange[0]}
-          maxPrice={priceRange[1]}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          totalResults={totalResults}
-          maxPriceChange={maxPriceRange}
-          onPriceRangeChange={setPriceRange}
-          onSortChange={(field, order) => { setSortBy(field); setSortOrder(order); }}
-          clearAll={() => {
-            setDebounced("");
-            setSearchText("");
-            setCategory(null);
-            setDebouncedPriceRange([0, Infinity]);
-            setPriceRange([0, Infinity]);
-            setSortBy("name");
-            setSortOrder("asc");
-          }}
-          clearSearch={() => {
-            setDebounced("");
-            setSearchText("");
-          }}
-          clearCategory={() => setCategory(null)}
-          clearPrice={() => {
-            setDebouncedPriceRange([0, Infinity]);
-            setPriceRange([0, Infinity]);
-          }}
-        />
-          <Products 
-            containerRef={containerRef}
-            addToCart={addToCart} 
-            itemsPerRow={itemsPerRow}
-            products={products}
-            isLoading={isLoading}
-            loaderRef={loaderRef}
-            fetchErrored={fetchErrored}
-            loadMore={loadMore}
+      <SearchAppBar 
+        searchText={searchText} 
+        setSearchText={setSearchText} 
+        checkoutOpen={checkoutOpen}
+        handleOpenCheckout={handleOpenCheckout} 
+        handleCloseCheckout={handleCloseCheckout} 
+        quantity={cart?.totalItems || 0} 
+        price={cart?.totalPrice || 0}/>
+      <AnimatePresence>
+        {checkoutOpen &&
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3 }}
+            style={{ width: "100vw", height: "100vh" }}
+          >
+            <CheckoutWizard 
+              cart={cart} 
+              removeItem={removeItem} 
+              addToCart={addToCart} 
+              resetCart={resetCart} 
+              handleCloseCheckout={handleCloseCheckout}
+            />
+          </motion.div> }
+      </AnimatePresence>
+      {!checkoutOpen && (
+        <Box flex={1} display="flex" minHeight={0} flexDirection="row">
+          <Categories category={category} setCategory={setCategory} />
+          <Box flex={1} display="flex" minHeight={0} flexDirection="column">
+          <ProductFilters
+            category={category}
+            searchText={debouncedSearch}
+            priceRange={priceRange}
+            minPrice={priceRange[0]}
+            maxPrice={priceRange[1]}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            totalResults={totalResults}
+            maxPriceChange={maxPriceRange}
+            setCategory={setCategory}
+            onPriceRangeChange={setPriceRange}
+            onSortChange={(field, order) => { setSortBy(field); setSortOrder(order); }}
+            clearAll={() => {
+              setDebounced("");
+              setSearchText("");
+              setCategory(null);
+              setDebouncedPriceRange([0, Infinity]);
+              setPriceRange([0, Infinity]);
+              setSortBy("name");
+              setSortOrder("asc");
+            }}
+            clearSearch={() => {
+              setDebounced("");
+              setSearchText("");
+            }}
+            clearCategory={() => setCategory(null)}
+            clearPrice={() => {
+              setDebouncedPriceRange([0, Infinity]);
+              setPriceRange([0, Infinity]);
+            }}
           />
+            <Products 
+              containerRef={containerRef}
+              addToCart={addToCart} 
+              itemsPerRow={itemsPerRow}
+              products={products}
+              isLoading={isLoading}
+              loaderRef={loaderRef}
+              fetchErrored={fetchErrored}
+              loadMore={loadMore}
+            />
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 }

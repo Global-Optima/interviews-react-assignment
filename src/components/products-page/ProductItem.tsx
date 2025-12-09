@@ -46,7 +46,7 @@ const ProductItem = ({ product, addToCart }: ProductItemProps) => {
         <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
           <IconButton
             size="small"
-            disabled={product.loading || !product.itemInCart}
+            disabled={!product.itemInCart}
             onClick={() => addToCart(product.id, -1)}
           >
             <RemoveIcon fontSize="small" />
@@ -56,7 +56,6 @@ const ProductItem = ({ product, addToCart }: ProductItemProps) => {
           </Typography>
           <IconButton
             size="small"
-            disabled={product.loading}
             onClick={() => addToCart(product.id, 1)}
           >
             <AddIcon fontSize="small" />
