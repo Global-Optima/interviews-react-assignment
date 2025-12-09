@@ -16,7 +16,8 @@ import {
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useStepperContext } from "../../../shared/context/stepper-context";
+import { useStepperContext } from "../../../shared/hooks/useStepperContext";
+import { useCartForm } from "../hooks/use-cart-form";
 
 const paymentSchema = z.discriminatedUnion("method", [
   z.object({
@@ -62,6 +63,7 @@ export const CartStep3 = () => {
   });
 
   const { nextPage } = useStepperContext();
+  const { setPayment } = useCartForm();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const formData = watch();
@@ -90,9 +92,10 @@ export const CartStep3 = () => {
   }, [formData, isLoaded]);
 
   const onSubmit = (data: PaymentFormData) => {
+    console.log("Payment data:", data);
+    setPayment(data);
     if (data.method === "paypal") {
       console.log("Redirecting to PayPal...");
-        window.open("https://www.paypal.com/checkout", "_blank");
     }
     nextPage();
   };

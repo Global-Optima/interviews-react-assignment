@@ -1,5 +1,5 @@
 import { Box, Button } from '@mui/material';
-import { StepperProvider } from '../context/stepper-context';
+import { StepperProvider } from '../hooks/useStepperContext';
 import { useStepper } from '../hooks/useStepper';
 import { StepperPage } from '../model/types';
 import { ArrowBack } from '@mui/icons-material';

@@ -14,7 +14,8 @@ import {
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useStepperContext } from "../../../shared/context/stepper-context";
+import { useStepperContext } from "../../../shared/hooks/useStepperContext";
+import { useCartForm } from "../hooks/use-cart-form";
 
 const shippingSchema = z.object({
   fullName: z
@@ -55,6 +56,7 @@ export const CartStep2 = () => {
   });
 
   const { nextPage } = useStepperContext();
+  const { setShipping } = useCartForm();
 
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -85,6 +87,7 @@ export const CartStep2 = () => {
 
   const onSubmit = (data: ShippingFormData) => {
     console.log("Form is valid:", data);
+    setShipping(data);
     nextPage();
   };
 

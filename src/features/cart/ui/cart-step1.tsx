@@ -5,7 +5,7 @@ import {
     Divider,
     Typography
 } from "@mui/material";
-import { useStepperContext } from '../../../shared/context/stepper-context';
+import { useStepperContext } from '../../../shared/hooks/useStepperContext';
 import { useCart } from "../hooks/use-cart";
 import { CartItemCard } from "./cart-item-card";
 
