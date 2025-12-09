@@ -63,3 +63,10 @@ Checkout functionality:
    Click on the cart to see the checkout page.
  
 ## Some asumptions made by me
+The project focuses on demonstrating frontend architecture and performance techniques rather than pixel-perfect UI replication.
+
+The mock API represents a simplified backend and is not intended to mimic real-world latency, security, or validation behavior.
+
+Infinite scroll and virtualization assume that the product list can grow large but fits into typical e-commerce browsing patterns.
+
+Mobile responsiveness is implemented at a practical level, not covering every edge case or device size.
