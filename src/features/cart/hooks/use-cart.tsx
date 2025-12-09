@@ -23,11 +23,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
     // optimistically update cart UI
     const optimisticCart = updateCartItem(cart, product, quantity);
-    console.log('Optimistic Cart:', optimisticCart);
     setCart(optimisticCart);
 
-
-  
     try {
       const response = await fetch('/cart', {
         method: 'POST',
@@ -41,11 +38,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         const updatedCart = await response.json();
         //override with backend response
         setCart(updatedCart);
-        console.log('Updated Cart from server:', updatedCart);
         return updatedCart;
       } else {
         //rollback on failure
-        console.log('Reverting to previous cart due to error');
         setCart(previousCart);
       }
     } catch (error) {

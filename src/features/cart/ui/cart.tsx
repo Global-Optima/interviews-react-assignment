@@ -7,6 +7,7 @@ import { useCart } from "../hooks/use-cart";
 import { useState } from "react";
 import { Stepper } from "../../../shared/ui/stepper";
 import { StepperPage } from "../../../shared/model/types";
+import { CartStep1 } from "./cart-step1";
 
 export default function Cart() {
   const { cart } = useCart();
@@ -19,9 +20,7 @@ export default function Cart() {
       id: "page1",
       label: "Page 1",
       content: (
-        <Typography variant="body1" sx={{ p: 2 }}>
-          Page 1 Content
-        </Typography>
+        <CartStep1 />
       ),
     },
     {
