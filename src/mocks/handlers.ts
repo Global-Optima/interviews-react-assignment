@@ -19,7 +19,7 @@ function randomTechCategory() {
 const products: Product[] = names.map((name, index) => ({
   id: index,
   name: name,
-  imageUrl: `https://via.placeholder.com/150?text=Product+${index}`,
+  imageUrl: `https://via.nplaceholder.com/150?text=Product+${index}`,
   price: parseFloat((Math.random() * 2970 + 29).toFixed(2)), // $29 - $2999
   category: randomTechCategory(),
 }));
@@ -49,33 +49,48 @@ function computeCart() {
 export const handlers = [
   http.get('/products', async ({ request }) => {
     await delay();
-    // Construct a URL instance out of the intercepted request.
     const url = new URL(request.url);
-
-    // Read the "id" URL query parameter using the "URLSearchParams" API.
-    // Given "/product?id=1", "productId" will equal "1".
     const searchQuery = url.searchParams.get('q');
     const category = url.searchParams.get('category');
     const page = url.searchParams.get('page') || '0';
     const limit = url.searchParams.get('limit') || '10';
-
-    const filteredProducts = products.filter((product) => {
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      if (category && product.category !== category) {
-        return false;
-      }
+    const sortBy = url.searchParams.get('sortBy');
+    const sortOrder = url.searchParams.get('sortOrder') || 'asc';
+    const minPrice = parseFloat(url.searchParams.get('minPrice') || '0');
+    const maxPrice = parseFloat(url.searchParams.get('maxPrice') || 'Infinity');
+    let filteredProducts = products.filter(product => {
+      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (category && product.category !== category) return false;
       return true;
     });
+    const maxPriceChange = filteredProducts.reduce((max, p) => Math.max(max, p.price), 0);
+    filteredProducts = filteredProducts.filter(product => {
+      if (minPrice != null && product.price < minPrice) return false;
+      if (maxPrice != null && product.price > maxPrice) return false;
+      return true;
+    });
+    if (sortBy === 'name') {
+      filteredProducts.sort((a, b) => {
+        const res = a.name.localeCompare(b.name);
+        return sortOrder === 'asc' ? res : -res;
+      });
+    } else if (sortBy === 'price') {
+      filteredProducts.sort((a, b) => {
+        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+      });
+    } else if (sortBy === 'id') {
+      filteredProducts.sort((a, b) => {
+        return sortOrder === 'asc' ? a.id - b.id : b.id - a.id;
+      });
+    }
     const realPage = parseInt(page, 10) || 0;
     const realLimit = parseInt(limit, 10) || 10;
     const pageList = filteredProducts.slice(realPage * realLimit, (realPage + 1) * realLimit);
-
     return HttpResponse.json({
       products: pageList,
       total: filteredProducts.length,
       hasMore: realPage * realLimit + realLimit < filteredProducts.length,
+      maxPriceChange
     });
   }),
   http.post<never, { productId: number; quantity: number }>('/cart', async ({ request }) => {
