@@ -131,8 +131,11 @@ Added slider for price range + made it work with urls
    - ⚠️ Do NOT remove `HeavyComponent`—optimize around it
 2. **Fix the cart update bug** (line 59: stale closure issue) x
 3. Implement **optimistic UI updates** for add/remove cart actions x
-4. Prevent unnecessary re-renders
-5. **Provide proof** of performance improvements (screenshots, metrics, profiler data)
+4. Prevent unnecessary re-renders x
+5. **Provide proof** of performance improvements (screenshots, metrics, profiler data) TODO 
+
+After
+![alt text](image.png)
 
 **Bonus**:
 - Implement virtual scrolling for large product lists
