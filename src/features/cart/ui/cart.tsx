@@ -2,14 +2,14 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { Badge } from "@mui/material";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
-import { useCart } from "../hooks/use-cart";
 import { useState } from "react";
-import { Stepper } from "../../../shared/ui/stepper";
 import { StepperPage } from "../../../shared/model/types";
+import { Stepper } from "../../../shared/ui/stepper";
+import { useCart } from "../hooks/use-cart";
 import { CartStep1 } from "./cart-step1";
 import { CartStep2 } from "./cart-step2";
 import { CartStep3 } from "./cart-step3";
+import { CartStep4 } from "./cart-step4";
 
 export default function Cart() {
   const { cart } = useCart();
@@ -43,9 +43,7 @@ export default function Cart() {
       id: "page4",
       label: "Page 4",
       content: (
-        <Typography variant="body1" sx={{ p: 2 }}>
-          Page 4 Content
-        </Typography>
+        <CartStep4></CartStep4>
       ),
     },
   ];

@@ -5,6 +5,7 @@ import { Product } from "../../products/model/types";
 interface CartContextType {
   cart: Cart | undefined;
   addToCart: (product: Product, quantity: number) => Promise<Cart | undefined>;
+  clearCart: () => void;
   isProductLoading: (productId: number) => boolean;
   getProductQuantity: (productId: number) => number;
 }
@@ -54,6 +55,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [cart]);
 
+  const clearCart = useCallback(() => {
+    setCart(undefined);
+  }, []);
+
   const isProductLoading = useCallback((productId: number) => {
     return loadingItems.has(productId);
   }, [loadingItems]);
@@ -64,7 +69,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cart]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, isProductLoading, getProductQuantity }}>
+    <CartContext.Provider value={{ cart, addToCart, isProductLoading, getProductQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
