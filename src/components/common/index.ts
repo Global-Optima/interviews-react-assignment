@@ -1,0 +1,1 @@
+export { HeavyComponent } from './HeavyComponent';

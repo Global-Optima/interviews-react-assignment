@@ -200,7 +200,7 @@ All endpoints are mocked with MSW:
 
 ## How to Run
 
-<!-- Add your name and 🚀 emoji here if you read the hidden message! -->
+Yerassyl 🚀
 
 ```bash
 # Install dependencies
@@ -241,3 +241,52 @@ pnpm lint
 **Questions?** In a real scenario, you'd ask your team lead. For this assignment, document your assumptions and move forward.
 
 Good luck! 🚀
+
+---
+
+## Solution by Yerassyl
+
+### Challenges Completed
+- **Challenge #1: Product List with Infinite Scroll**
+  - Implemented **infinite scroll** to load products as the user scrolls down the page.
+  - Refactored the `Products` component for better maintainability.
+  - Added proper loading states.
+  - Fixed the `key` warning.
+  - Handled edge cases.
+- **Challenge #2: Advanced Search & Filtering**
+  - Implemented **real-time search** that filters products as user types.
+  - Connected category buttons to filter products.
+  - Allowed **combining** search and category filters.
+  - Added debouncing to search to prevent too many requests.
+  - Synced state with URL query parameters using a custom `useUrlState` hook for shareable links.
+  - Added a "Clear Filters" button to reset the filters.
+  - Added active filter indicators to show which filters are currently applied.
+  - Added price range bilter, sorting options, and result count.
+- **Challenge #3: Performance Optimization**
+  - Utilized `react-window` `FixedSizeGrid` with `AutoSizer` to virtualize the product grid, significantly reducing DOM nodes.
+  - Optimized re-renders with `React.memo` and `useCallback`.
+  - **Fixed the cart update bug**
+  - Implemented **optimistic UI updated** for add/remove cart actions.
+- **Challenge #4: Multi-Step Checkout Flow**
+  - Built a complete checkout wizard with `Cart Review`, `Shipping`, `Payment`, and `Confirmation` steps.
+  - Managed wizard state locally with `CheckoutContext`.
+  - Added progress indicator showing current step.
+  - Added back/next navigation.
+  - Added form validation with proper error messages.
+  - Responsive and accessible design.
+  - Added order tracking number on success and email preview/summary.
+
+### Key Decisions & Trade-offs
+- **Virtualization**: Chose `react-window` over manual implementation for robustness and performance. Trade-off is that it adds dependency and complexity in styling (grid calculations).
+- **URL State**: Implemented `useUrlState` to keep filters in the URL. Trade-off is that it adds complexity in syncing types and parsing params, but I think it's worth it for UX (bookmarking/sharing).
+- **Checkout State**: Used a localized Context `CheckoutContext` instead of a global store (like Redux) since the checkout state is only used by the checkout.
+- **Input Validation**: Intentionally omitted strict validation on some fields (like credit card format) to facilitate easier manual testing during review.
+
+### How to Test
+1. **Infinite Scroll**: Scroll down the product list, new items should load without issues.
+2. **Search/Filter**: Type in the search bar and/or select a category and/or use other filters/sort options. Refresh the page to see the state persist via URL.
+3. **Checkout**: Click the cart icon and go through the 4 steps.
+4. **Performance**: Observe smooth scrolling even with the "HeavyComponent" simulated load.
+
+### Assumptions + What I did extra
+- Persisted products details, cart, and checkout state using `LocalStorage`.
